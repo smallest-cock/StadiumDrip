@@ -1,0 +1,374 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{396e4dda-4fe2-4588-9756-a364a57aa8c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\headers">
+      <UniqueIdentifier>{ae0c99c9-78de-41f1-8c8d-e6eb860af833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\implementation">
+      <UniqueIdentifier>{d46c4711-0bdc-484c-bb4c-5526d80f7f5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PCH">
+      <UniqueIdentifier>{65407bae-1075-4bdd-9dfd-acc5a636ec02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin">
+      <UniqueIdentifier>{a1b543a5-c4b7-4cf1-8adf-c2f26cf59952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin\header">
+      <UniqueIdentifier>{46d01869-81e6-496b-b2c1-aeeb13d6b983}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin\src">
+      <UniqueIdentifier>{33ae5c6a-718c-410e-bdb8-9c032f65c710}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{bdc544af-e0fc-4c21-bdf2-1133eecc99de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{f4fa35a1-bff5-492d-8cf4-d6cfcfec565e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\SDK_HEADERS">
+      <UniqueIdentifier>{06d6bfa8-b5b8-4080-beb0-4397160c800b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Components">
+      <UniqueIdentifier>{aecf812e-ce3e-43ed-a989-240ce04033c2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_additions.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx11.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_rangeslider.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_searchablecombo.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_timeline.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imguivariouscontrols.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="IMGUI\imgui_stdlib.cpp">
+      <Filter>imgui\implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>PCH</Filter>
+    </ClCompile>
+    <ClCompile Include="StadiumDrip.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiBase.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\GameDefines.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\AkAudio_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\Core_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\Engine_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\GFxUI_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\IpDrv_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\OnlineSubsystemEOS_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\ProjectX_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\TAGame_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\WinDrv_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\SDK_HEADERS\XAudio2_classes.cpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Instances.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Items.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Utils.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Textures.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Teams.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RegisterCvars.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="CvarChangedCallbacks.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Messages.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\MainMenu.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\Components\Replays.cpp">
+      <Filter>Components\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imgui\imgui_rangeslider.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_searchablecombo.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_timeline.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imguivariouscontrols.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_additions.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx11.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMGUI\imgui_stdlib.h">
+      <Filter>imgui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="StadiumDrip.h">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="logging.h">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiBase.h">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\GameDefines.hpp">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SdkHeaders.hpp">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\AkAudio_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\AkAudio_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\AkAudio_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Core_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Core_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Core_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Engine_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Engine_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\Engine_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\GFxUI_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\GFxUI_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\GFxUI_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\IpDrv_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\IpDrv_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\IpDrv_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\OnlineSubsystemEOS_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\OnlineSubsystemEOS_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\OnlineSubsystemEOS_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\ProjectX_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\ProjectX_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\ProjectX_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\TAGame_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\TAGame_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\TAGame_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\WinDrv_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\WinDrv_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\WinDrv_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\XAudio2_classes.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\XAudio2_parameters.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\SDK_HEADERS\XAudio2_structs.hpp">
+      <Filter>SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Includes.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Instances.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Items.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Utils.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Cvars.hpp">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Textures.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="nlohmann.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.hpp">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiTools.hpp">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Teams.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Macros.hpp">
+      <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Messages.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\MainMenu.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Replays.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="StadiumDrip.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
