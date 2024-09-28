@@ -47,6 +47,6 @@ Find the latest version in [Releases](https://github.com/smallest-cock/StadiumDr
 
 ## ☕ Support
 
-If you enjoy this plugin, consider donating ♥
+If you enjoy this plugin, consider funding my coffee addiction 🧡
 
-https://ko-fi.com/sslowdev 
+<a href="https://www.buymeacoffee.com/sslowdev" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 200px !important;" ></a>
