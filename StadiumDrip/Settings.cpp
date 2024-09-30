@@ -769,7 +769,7 @@ void StadiumDrip::ReplayMapsDropdown()
 	}
 
 	char searchBuffer[128] = "";	// Buffer for the search input
-	const char* previewValue = Replays.mapNames[Replays.dropdownPreviewIndex].c_str();		// just show first map name in vector as default preview value
+	const char* previewValue = Replays.mapNames[Replays.dropdownPreviewIndex].prettyName.c_str();		// just show first map name in vector as default preview value
 
 	if (ImGui::BeginSearchableCombo("change map##replayMapsDropdown", previewValue, searchBuffer, sizeof(searchBuffer), "search..."))
 	{
@@ -778,7 +778,8 @@ void StadiumDrip::ReplayMapsDropdown()
 
 		for (int i = 0; i < Replays.mapNames.size(); i++)
 		{
-			const std::string& mapNameStr = Replays.mapNames[i];
+			const std::string& internalMapNameStr = Replays.mapNames[i].internalName;
+			const std::string& mapNameStr = Replays.mapNames[i].prettyName;
 			const std::string mapNameStrLower = Format::ToLower(mapNameStr);
 
 			ImGui::PushID(i);
@@ -790,8 +791,8 @@ void StadiumDrip::ReplayMapsDropdown()
 				{
 					if (ImGui::Selectable(mapNameStr.c_str(), Replays.dropdownPreviewIndex == i))
 					{
-						GAME_THREAD_EXECUTE_CAPTURE(mapNameStr,
-							Replays.ChangeMap(mapNameStr);
+						GAME_THREAD_EXECUTE_CAPTURE(internalMapNameStr,
+							Replays.ChangeMap(internalMapNameStr);
 						);
 					}
 				}
@@ -801,8 +802,8 @@ void StadiumDrip::ReplayMapsDropdown()
 			{
 				if (ImGui::Selectable(mapNameStr.c_str(), Replays.dropdownPreviewIndex == i))
 				{
-					GAME_THREAD_EXECUTE_CAPTURE(mapNameStr,
-						Replays.ChangeMap(mapNameStr);
+					GAME_THREAD_EXECUTE_CAPTURE(internalMapNameStr,
+						Replays.ChangeMap(internalMapNameStr);
 					);
 				}
 			}
