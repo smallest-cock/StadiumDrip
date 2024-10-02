@@ -7,7 +7,7 @@ void StadiumDrip::changed_useCustomTeamNames(std::string cvarName, CVarWrapper u
 {
 	bool updatedVal = updatedCvar.getBoolValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 
 		if (updatedVal)
 		{
@@ -18,7 +18,7 @@ void StadiumDrip::changed_useCustomTeamNames(std::string cvarName, CVarWrapper u
 		}
 		else
 			Teams.ChangeTeamNames();
-	);
+	, updatedVal);
 }
 
 
@@ -55,12 +55,12 @@ void StadiumDrip::changed_blueTeamName(std::string cvarName, CVarWrapper updated
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 		
 		auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
 
 		Teams.ChangeTeamNames(updatedVal, orangeTeamName_cvar.getStringValue());
-	);
+	, updatedVal);
 
 	DEBUGLOG("{} changed...", cvarName);
 }
@@ -70,12 +70,12 @@ void StadiumDrip::changed_orangeTeamName(std::string cvarName, CVarWrapper updat
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 
 		auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
 
 		Teams.ChangeTeamNames(blueTeamName_cvar.getStringValue(), updatedVal);
-	);
+	, updatedVal);
 
 
 	DEBUGLOG("{} changed...", cvarName);
@@ -111,7 +111,7 @@ void StadiumDrip::changed_useCustomTeamColors(std::string cvarName, CVarWrapper 
 
 	bool updatedVal = updatedCvar.getBoolValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 
 		// update field colors
 
@@ -135,7 +135,7 @@ void StadiumDrip::changed_useCustomTeamColors(std::string cvarName, CVarWrapper 
 		if (inFreeplay) return;
 
 		Teams.UpdateTeamHUDColors(nullptr, !updatedVal);
-	);
+	, updatedVal);
 }
 
 
@@ -145,7 +145,7 @@ void StadiumDrip::changed_useSingleFreeplayColor(std::string cvarName, CVarWrapp
 
 	bool updatedVal = updatedCvar.getBoolValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 
 		if (!gameWrapper->IsInFreeplay()) return;
 
@@ -154,7 +154,7 @@ void StadiumDrip::changed_useSingleFreeplayColor(std::string cvarName, CVarWrapp
 		if (!useCustomTeamColors_cvar || !useRGBFreeplayColors_cvar) return;
 
 		Teams.UpdateTeamFieldColors(nullptr, !useCustomTeamColors_cvar.getBoolValue(), updatedVal, useRGBFreeplayColors_cvar.getBoolValue());
-	);
+	, updatedVal);
 }
 
 
@@ -164,7 +164,7 @@ void StadiumDrip::changed_useRGBFreeplayColors(std::string cvarName, CVarWrapper
 
 	bool updatedVal = updatedCvar.getBoolValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(updatedVal,
+	GAME_THREAD_EXECUTE_CAPTURE(
 
 		if (!gameWrapper->IsInFreeplay()) return;
 
@@ -173,5 +173,5 @@ void StadiumDrip::changed_useRGBFreeplayColors(std::string cvarName, CVarWrapper
 		if (!useCustomTeamColors_cvar || !useSingleFreeplayColor_cvar) return;
 
 		Teams.UpdateTeamFieldColors(nullptr, !useCustomTeamColors_cvar.getBoolValue(), useSingleFreeplayColor_cvar.getBoolValue(), updatedVal);
-	);
+	, updatedVal);
 }

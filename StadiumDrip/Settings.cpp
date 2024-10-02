@@ -30,9 +30,9 @@ void StadiumDrip::RenderSettings()
 		std::string openMenuCommand = "togglemenu " + GetMenuName();
 		if (ImGui::Button("Open Menu"))
 		{
-			GAME_THREAD_EXECUTE_CAPTURE(openMenuCommand,
+			GAME_THREAD_EXECUTE_CAPTURE(
 				cvarManager->executeCommand(openMenuCommand);
-			);
+			, openMenuCommand);
 		}
 
 		GUI::Spacing(8);
@@ -539,9 +539,9 @@ void StadiumDrip::MainMenu_Tab()
 			{
 				FVector newLocation = { mainMenuX, mainMenuY, mainMenuZ };
 
-				GAME_THREAD_EXECUTE_CAPTURE(newLocation,
+				GAME_THREAD_EXECUTE_CAPTURE(
 					Mainmenu.SetLocation(newLocation);
-				);
+				, newLocation);
 			}
 
 			GUI::SameLineSpacing(25);
@@ -572,9 +572,9 @@ void StadiumDrip::MainMenu_Tab()
 			customFOV_cvar.setValue(customFOV);
 
 			// TODO: move to a cvar callback function
-			GAME_THREAD_EXECUTE_CAPTURE(customFOV,
+			GAME_THREAD_EXECUTE_CAPTURE(
 				Mainmenu.SetCameraFOV(customFOV);
-			);
+			, customFOV);
 		}
 
 		GUI::SameLineSpacing(25);
@@ -791,9 +791,9 @@ void StadiumDrip::ReplayMapsDropdown()
 				{
 					if (ImGui::Selectable(mapNameStr.c_str(), Replays.dropdownPreviewIndex == i))
 					{
-						GAME_THREAD_EXECUTE_CAPTURE(internalMapNameStr,
+						GAME_THREAD_EXECUTE_CAPTURE(
 							Replays.ChangeMap(internalMapNameStr);
-						);
+						, internalMapNameStr);
 					}
 				}
 			}
@@ -802,9 +802,9 @@ void StadiumDrip::ReplayMapsDropdown()
 			{
 				if (ImGui::Selectable(mapNameStr.c_str(), Replays.dropdownPreviewIndex == i))
 				{
-					GAME_THREAD_EXECUTE_CAPTURE(internalMapNameStr,
+					GAME_THREAD_EXECUTE_CAPTURE(
 						Replays.ChangeMap(internalMapNameStr);
-					);
+					, internalMapNameStr);
 				}
 			}
 
