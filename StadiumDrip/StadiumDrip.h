@@ -55,9 +55,7 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 
 	// default values
 	static constexpr const int defaultRGBSpeed = 0;
-	//static constexpr const float defaultMainMenuX = -1345.8276f;
-	//static constexpr const float defaultMainMenuY = -1587.3844f;
-	//static constexpr const float defaultMainMenuZ = 0.0f;
+
 
 	// misc
 	void TickRGB();
@@ -97,10 +95,10 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 
 
 	// hook callbacks
-	void Event_LoadingScreenStart(std::string eventName);
+	//void Event_LoadingScreenStart(std::string eventName);
+	//void Event_EnterStartState(std::string eventName);
 	void Event_LoadingScreenEnd(std::string eventName);
 	void Event_EnterMainMenu(std::string eventName);
-	void Event_EnterStartState(std::string eventName);
 	void Event_MenuChanged(std::string eventName);
 	void Event_RenderColorArray(std::string eventName);
 	void Event_MainMenuSwitch(std::string eventName);
@@ -110,6 +108,9 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 	void Event_EventTeamsCreated(ActorWrapper caller, void* params, std::string eventName);
 	void Event_HandleColorsChanged(ActorWrapper caller, void* params, std::string eventName);
 	void Event_HUDTick(ActorWrapper caller, void* params, std::string eventName);
+	
+	void Event_HandleNameChanged(ActorWrapper caller, void* params, std::string eventName);
+	void Event_TeamNameComponentFuncCalled(ActorWrapper caller, void* params, std::string eventName);
 
 	// hijack ad texture changes
 	void Event_MicSetTextureParamValue(ActorWrapper caller, void* params, std::string eventName);	// this is the one

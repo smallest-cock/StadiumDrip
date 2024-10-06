@@ -20,6 +20,13 @@ namespace Events
 	constexpr const char* ReceiveMessage =					"Function TAGame.PlayerController_TA.ReceiveMessage";
 	constexpr const char* HUDTick =							"Function TAGame.GFxHUD_TA.Tick";
 
+	constexpr const char* SetCustomTeamName =				"Function TAGame.TeamNameComponent_TA.SetCustomTeamName";
+	constexpr const char* UpdateTeamName =					"Function TAGame.TeamNameComponent_TA.UpdateTeamName";
+	constexpr const char* EventNameChanged =				"Function TAGame.TeamNameComponent_TA.EventNameChanged";
+	constexpr const char* GetTeamName =						"Function TAGame.TeamNameComponent_TA.GetTeamName";
+
+	constexpr const char* HandleNameChanged =				"Function TAGame.GFxData_TeamInfo_TA.HandleNameChanged";
+
 	constexpr const char* MicSetTextureParamValue =			"Function Engine.MaterialInstanceConstant.SetTextureParameterValue";
 
 	// could be useful for freeing mem

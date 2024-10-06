@@ -5,20 +5,9 @@
 
 void StadiumDrip::changed_useCustomTeamNames(std::string cvarName, CVarWrapper updatedCvar)
 {
-	bool updatedVal = updatedCvar.getBoolValue();
-
-	GAME_THREAD_EXECUTE_CAPTURE(
-
-		if (updatedVal)
-		{
-			auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
-			auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
-
-			Teams.ChangeTeamNames(blueTeamName_cvar.getStringValue(), orangeTeamName_cvar.getStringValue());
-		}
-		else
-			Teams.ChangeTeamNames();
-	, updatedVal);
+	GAME_THREAD_EXECUTE(
+		Teams.ChangeNamesFromGameEvent();
+	);
 }
 
 
@@ -51,16 +40,17 @@ void StadiumDrip::changed_singleFreeplayColor(std::string cvarName, CVarWrapper 
 }
 
 
+// these dont need to check if useCustomTeamNames is enabled, bc they are only visible/editable when it's enabled (except in the console)
 void StadiumDrip::changed_blueTeamName(std::string cvarName, CVarWrapper updatedCvar)
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
-	GAME_THREAD_EXECUTE_CAPTURE(
-		
-		auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
+	auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
+	std::string orangeTeamName = orangeTeamName_cvar.getStringValue();
 
-		Teams.ChangeTeamNames(updatedVal, orangeTeamName_cvar.getStringValue());
-	, updatedVal);
+	GAME_THREAD_EXECUTE_CAPTURE(
+		Teams.ChangeTeamNames(updatedVal, orangeTeamName);
+	, updatedVal, orangeTeamName);
 
 	DEBUGLOG("{} changed...", cvarName);
 }
@@ -70,13 +60,12 @@ void StadiumDrip::changed_orangeTeamName(std::string cvarName, CVarWrapper updat
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
+	auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
+	std::string blueTeamName = blueTeamName_cvar.getStringValue();
+
 	GAME_THREAD_EXECUTE_CAPTURE(
-
-		auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
-
-		Teams.ChangeTeamNames(blueTeamName_cvar.getStringValue(), updatedVal);
-	, updatedVal);
-
+		Teams.ChangeTeamNames(blueTeamName, updatedVal);
+	, updatedVal, blueTeamName);
 
 	DEBUGLOG("{} changed...", cvarName);
 }

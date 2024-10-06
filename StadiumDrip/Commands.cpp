@@ -32,22 +32,7 @@ void StadiumDrip::cmd_applyTeamColors(std::vector<std::string> args)
 
 void StadiumDrip::cmd_applyTeamNames(std::vector<std::string> args)
 {
-	auto gameState = GetGameState();
-	if (gameState == States::MainMenu || gameState == States::Freeplay) return;
-
-	auto useCustomTeamNames_cvar = GetCvar(Cvars::useCustomTeamNames);
-	if (!useCustomTeamNames_cvar) return;
-	if (!useCustomTeamNames_cvar.getBoolValue())
-	{ 
-		Teams.ChangeTeamNames();	// set default "Blue" and "Orange" names
-		return;
-	}
-
-	auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
-	auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
-	if (!blueTeamName_cvar || !orangeTeamName_cvar) return;
-
-	Teams.ChangeTeamNames(blueTeamName_cvar.getStringValue(), orangeTeamName_cvar.getStringValue());
+	Teams.ChangeNamesFromGameEvent();
 }
 
 
@@ -105,7 +90,6 @@ void StadiumDrip::cmd_changeReplayMap(std::vector<std::string> args)
 
 
 // ================================ testing ================================
-
 
 void StadiumDrip::cmd_test(std::vector<std::string> args)
 {

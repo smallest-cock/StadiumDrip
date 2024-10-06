@@ -118,7 +118,6 @@ void StadiumDrip::onLoad()
 	// =================================== HOOKS =====================================
 
 	gameWrapper->HookEventPost(Events::LoadingScreenEnd,		std::bind(&StadiumDrip::Event_LoadingScreenEnd, this, std::placeholders::_1));
-	gameWrapper->HookEventPost(Events::EnterStartState,			std::bind(&StadiumDrip::Event_EnterStartState, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::RenderColorArray,		std::bind(&StadiumDrip::Event_RenderColorArray, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::EnterMainMenu,			std::bind(&StadiumDrip::Event_EnterMainMenu, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::ProgressToMainMenu,		std::bind(&StadiumDrip::Event_EnterMainMenu, this, std::placeholders::_1));
@@ -149,6 +148,22 @@ void StadiumDrip::onLoad()
 	// overwrite any ad texture changes
 	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::MicSetTextureParamValue,
 		std::bind(&StadiumDrip::Event_MicSetTextureParamValue, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::HandleNameChanged,
+		std::bind(&StadiumDrip::Event_HandleNameChanged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	// TNC functions
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::GetTeamName,
+		std::bind(&StadiumDrip::Event_TeamNameComponentFuncCalled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::EventNameChanged,
+		std::bind(&StadiumDrip::Event_TeamNameComponentFuncCalled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::SetCustomTeamName,
+		std::bind(&StadiumDrip::Event_TeamNameComponentFuncCalled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::UpdateTeamName,
+		std::bind(&StadiumDrip::Event_TeamNameComponentFuncCalled, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
 	// ===============================================================================
 

@@ -2,9 +2,50 @@
 #include "StadiumDrip.h"
 
 
-void StadiumDrip::Event_LoadingScreenStart(std::string eventName)
+
+//void StadiumDrip::Event_LoadingScreenStart(std::string eventName)
+//{
+//	// ...
+//}
+
+
+//void StadiumDrip::Event_EnterStartState(std::string eventName)
+//{
+//	// ...
+//}
+
+
+void StadiumDrip::Event_MenuChanged(std::string eventName)
 {
-	// ...
+	RunCommand(Cvars::changeMessageOfTheDay, 0.5f);
+}
+
+
+void StadiumDrip::Event_MainMenuSwitch(std::string eventName)
+{
+	RunCommand(Cvars::applyAdTexture, 0.5f);
+}
+
+
+void StadiumDrip::Event_LoadingScreenEnd(std::string eventName)
+{
+	DEBUGLOG("[HOOK] {}", eventName);
+
+	RunCommandInterval(Cvars::applyAdTexture, 3, 0.3f, true);
+
+	DELAY(2.0f,
+		Replays.StoreCurrentMapName();
+	);
+}
+
+
+void StadiumDrip::Event_EnterMainMenu(std::string eventName)
+{
+	DEBUGLOG("[HOOK] {}", eventName);
+
+	RunCommand(Cvars::changeMessageOfTheDay, 0.5f);
+
+	ApplyMainMenuCamSettings();
 }
 
 
@@ -35,46 +76,27 @@ void StadiumDrip::Event_RenderColorArray(std::string eventName)
 }
 
 
-void StadiumDrip::Event_MenuChanged(std::string eventName)
+
+// ============================================ hooks with caller ============================================
+
+void StadiumDrip::Event_HandleNameChanged(ActorWrapper caller, void* params, std::string eventName)
 {
-	RunCommand(Cvars::changeMessageOfTheDay, 0.5f);
+	UGFxData_TeamInfo_TA* info = reinterpret_cast<UGFxData_TeamInfo_TA*>(caller.memory_address);
+	if (!info) return;
+
+	UGFxData_TeamInfo_TA_execHandleNameChanged_Params* Params = reinterpret_cast<UGFxData_TeamInfo_TA_execHandleNameChanged_Params*>(params);
+	if (!Params) return;
+
+	Teams.ChangeNameFromTeamInfo(info, Params);
 }
 
 
-void StadiumDrip::Event_MainMenuSwitch(std::string eventName)
+void StadiumDrip::Event_TeamNameComponentFuncCalled(ActorWrapper caller, void* params, std::string eventName)
 {
-	RunCommand(Cvars::applyAdTexture, 0.5f);
-}
+	UTeamNameComponent_TA* tnc = reinterpret_cast<UTeamNameComponent_TA*>(caller.memory_address);
+	if (!tnc) return;
 
-
-void StadiumDrip::Event_LoadingScreenEnd(std::string eventName)
-{
-	DEBUGLOG("[HOOK] {}", eventName);
-
-	RunCommand(Cvars::applyTeamNames, 0.2f);
-	RunCommandInterval(Cvars::applyAdTexture, 3, 0.3f, true);
-
-	DELAY(2.0f,
-		Replays.StoreCurrentMapName();
-	);
-}
-
-
-void StadiumDrip::Event_EnterMainMenu(std::string eventName)
-{
-	DEBUGLOG("[HOOK] {}", eventName);
-
-	RunCommand(Cvars::changeMessageOfTheDay, 0.5f);
-
-	ApplyMainMenuCamSettings();
-}
-
-
-void StadiumDrip::Event_EnterStartState(std::string eventName)
-{
-	DEBUGLOG("[HOOK] {}", eventName);
-
-	RunCommand(Cvars::applyTeamNames);
+	Teams.ChangeNameFromTNC(tnc, nullptr, 0.1f, 5);
 }
 
 
@@ -158,7 +180,7 @@ void StadiumDrip::Event_HandleColorsChanged(ActorWrapper caller, void* params, s
 
 void StadiumDrip::Event_EventTeamsCreated(ActorWrapper caller, void* params, std::string eventName)
 {
-	if (gameWrapper->IsInFreeplay()) return;
+	if (gameWrapper->IsInFreeplay() || Teams.currentlySettingColor) return;
 
 	AGameEvent_Team_TA* gameEvent = reinterpret_cast<AGameEvent_Team_TA*>(caller.memory_address);
 	if (!gameEvent) {
