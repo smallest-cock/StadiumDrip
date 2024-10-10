@@ -399,9 +399,9 @@ void StadiumDrip::Messages_Tab()
 			GUI::Spacing(2);
 
 			// custom blue team name
-			std::string motd = motd_cvar.getStringValue();
+			std::string motd = Format::UnescapeQuotesHTML(motd_cvar.getStringValue());
 			if (ImGui::InputText("message", &motd))
-				motd_cvar.setValue(motd);
+				motd_cvar.setValue(Format::EscapeQuotesHTML(motd));
 
 			GUI::SameLineSpacing(10.0f);
 

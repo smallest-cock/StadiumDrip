@@ -20,7 +20,7 @@ void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
 	auto motd_cvar = GetCvar(Cvars::motd);
 	if (!motd_cvar) return;
 
-	const std::string rawText = motd_cvar.getStringValue();
+	const std::string rawText = Format::UnescapeQuotesHTML(motd_cvar.getStringValue());
 	std::string modifiedText = rawText;
 
 	auto useSingleMotdColor_cvar =		GetCvar(Cvars::useSingleMotdColor);

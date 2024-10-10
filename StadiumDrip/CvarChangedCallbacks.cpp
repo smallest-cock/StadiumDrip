@@ -73,6 +73,8 @@ void StadiumDrip::changed_orangeTeamName(std::string cvarName, CVarWrapper updat
 
 void StadiumDrip::changed_enableMotD(std::string cvarName, CVarWrapper updatedCvar)
 {
+	//if (pluginHasJustBeenLoaded) return;
+
 	bool updatedVal = updatedCvar.getBoolValue();
 
 	if (updatedVal)
