@@ -95,8 +95,7 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 
 
 	// hook callbacks
-	//void Event_LoadingScreenStart(std::string eventName);
-	//void Event_EnterStartState(std::string eventName);
+	void Event_LoadingScreenStart(std::string eventName);
 	void Event_LoadingScreenEnd(std::string eventName);
 	void Event_EnterMainMenu(std::string eventName);
 	void Event_MenuChanged(std::string eventName);

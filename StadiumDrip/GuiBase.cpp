@@ -48,7 +48,7 @@ void PluginWindowBase::OnClose()
 
 void PluginWindowBase::Render()
 {
-	ImGui::SetNextWindowSizeConstraints(ImVec2(600, 325), ImVec2(FLT_MAX, FLT_MAX));
+	ImGui::SetNextWindowSizeConstraints(ImVec2(600, 365), ImVec2(FLT_MAX, FLT_MAX));
 	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None))
 	{
 		// Early out if the window is collapsed, as an optimization.

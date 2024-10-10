@@ -26,9 +26,11 @@ namespace Cvars
 	const CvarData useRGBFreeplayColors =		{ "use_rgb_freeplay_colors",		"use RGB stadium colors in freeplay" };
 
 	const CvarData useCustomTeamNames =			{ "use_custom_team_names",			"use custom team names" };
-	const CvarData enableMotD =					{ "enable_message_of_the_day",		"enable message of the day (rolling footer message)" };
 	const CvarData useCustomGameMsgs =			{ "use_custom_game_messages",		"use custom game messages" };
 	const CvarData useCustomMainMenuLoc =		{ "use_custom_main_menu_location",	"use custom main menu location" };
+	const CvarData enableMotD =					{ "enable_message_of_the_day",		"enable message of the day (rolling footer message)" };
+	const CvarData useSingleMotdColor =			{ "use_single_motd_color",			"use a single color for message of the day" };
+	const CvarData useGradientMotdColor =		{ "use_gradient_motd_color",		"use a gradient of colors for message of the day" };
 
 	// strings
 	const CvarData selectedAdName =				{ "selected_ad_name",				"selected ad texture" };
@@ -55,6 +57,9 @@ namespace Cvars
 	const CvarData blueTeamFieldColor =			{ "blue_team_field_color",			"blue team field color" };
 	const CvarData orangeTeamFieldColor =		{ "orange_team_field_color",		"orange team field color" };
 	const CvarData singleFreeplayColor =		{ "single_freeplay_color",			"separate (single) freeplay color" };
+	const CvarData motdSingleColor =			{ "motd_single_color",				"solid color for rolling footer message text" };
+	const CvarData motdGradientColorBegin =		{ "motd_gradient_color_begin",		"beginning gradient color for motd" };
+	const CvarData motdGradientColorEnd =		{ "motd_gradient_color_end",		"end gradient color for motd" };
 
 
 	// ============================ commands ============================

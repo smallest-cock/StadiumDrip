@@ -323,9 +323,14 @@ void StadiumDrip::Ads_Tab()
 // messages tab
 void StadiumDrip::Messages_Tab()
 {
-	auto enableMotD_cvar = GetCvar(Cvars::enableMotD);
-	auto motd_cvar = GetCvar(Cvars::motd);
-	if (!enableMotD_cvar || !motd_cvar) return;
+	auto enableMotD_cvar =					GetCvar(Cvars::enableMotD);
+	auto motd_cvar =						GetCvar(Cvars::motd);
+	auto useSingleMotdColor_cvar =			GetCvar(Cvars::useSingleMotdColor);
+	auto motdSingleColor_cvar =				GetCvar(Cvars::motdSingleColor);
+	//auto useGradientMotdColor_cvar =		GetCvar(Cvars::useGradientMotdColor);
+	//auto motdGradientColorBegin_cvar =		GetCvar(Cvars::motdGradientColorBegin);
+	//auto motdGradientColorEnd_cvar =		GetCvar(Cvars::motdGradientColorEnd);
+	if (!enableMotD_cvar || !motd_cvar || !useSingleMotdColor_cvar) return;
 
 	auto useCustomGameMsgs_cvar =       GetCvar(Cvars::useCustomGameMsgs);
 	auto countdownMsg3_cvar =           GetCvar(Cvars::countdownMsg3);
@@ -342,8 +347,8 @@ void StadiumDrip::Messages_Tab()
 
 	ImVec2 parentSize = ImGui::GetContentRegionAvail();
 
-	ImVec2 footerMsgSectionSize = ImVec2(0, parentSize.y * 0.3f - 2);
-	ImVec2 gameMsgSectionSize = ImVec2(0, parentSize.y * 0.7f - 2);
+	ImVec2 footerMsgSectionSize = ImVec2(0, parentSize.y * 0.5f - 2);
+	ImVec2 gameMsgSectionSize = ImVec2(0, parentSize.y * 0.5f - 2);
 
 	// ----------------------------------------------------------------------
 
@@ -361,6 +366,38 @@ void StadiumDrip::Messages_Tab()
 		{
 			GUI::Spacing(2);
 
+			bool useSingleMotdColor = useSingleMotdColor_cvar.getBoolValue();
+			//bool useGradientMotdColor = useGradientMotdColor_cvar.getBoolValue();
+			
+			int radioState = 0;
+
+			if (useSingleMotdColor)
+			{
+				radioState = 1;
+			}
+			//else if (useGradientMotdColor)
+			//{
+			//	radioState = 2;
+			//}
+
+			if (ImGui::RadioButton("custom text/html", &radioState, 0))
+			{
+				useSingleMotdColor_cvar.setValue(false);
+				//useGradientMotdColor_cvar.setValue(false);
+			}
+			if (ImGui::RadioButton("colored text", &radioState, 1))
+			{
+				useSingleMotdColor_cvar.setValue(true);
+				//useGradientMotdColor_cvar.setValue(false);
+			}
+			//if (ImGui::RadioButton("gradient color text", &radioState, 2))
+			//{
+			//	useSingleMotdColor_cvar.setValue(false);
+			//	useGradientMotdColor_cvar.setValue(true);
+			//}
+
+			GUI::Spacing(2);
+
 			// custom blue team name
 			std::string motd = motd_cvar.getStringValue();
 			if (ImGui::InputText("message", &motd))
@@ -374,6 +411,30 @@ void StadiumDrip::Messages_Tab()
 					RunCommand(Cvars::changeMessageOfTheDay);
 				);
 			}
+
+			if (useSingleMotdColor)
+			{
+				// color picker
+				LinearColor motdSingleColor = motdSingleColor_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+				if (ImGui::ColorEdit3("color##motdSingleColor", &motdSingleColor.R, ImGuiColorEditFlags_NoInputs))
+				{
+					motdSingleColor_cvar.setValue(motdSingleColor * 255);
+				}
+			}
+			//else if (useGradientMotdColor)
+			//{
+			//	// 2 color pickers
+			//	LinearColor motdGradientColorBegin = motdGradientColorBegin_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+			//	if (ImGui::ColorEdit3("begin##motdGradientColor", &motdGradientColorBegin.R, ImGuiColorEditFlags_NoInputs))
+			//	{
+			//		motdGradientColorBegin_cvar.setValue(motdGradientColorBegin * 255);
+			//	}
+			//	LinearColor motdGradientColorEnd = motdGradientColorEnd_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+			//	if (ImGui::ColorEdit3("end##motdGradientColor", &motdGradientColorEnd.R, ImGuiColorEditFlags_NoInputs))
+			//	{
+			//		motdGradientColorEnd_cvar.setValue(motdGradientColorEnd * 255);
+			//	}
+			//}
 		}
 	}
 	ImGui::EndChild();

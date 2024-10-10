@@ -101,29 +101,40 @@ void StadiumDrip::changed_useCustomTeamColors(std::string cvarName, CVarWrapper 
 	bool updatedVal = updatedCvar.getBoolValue();
 
 	GAME_THREAD_EXECUTE_CAPTURE(
-
-		// update field colors
-
-		auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
-		auto useRGBFreeplayColors_cvar = GetCvar(Cvars::useRGBFreeplayColors);
-		if (!useSingleFreeplayColor_cvar || !useRGBFreeplayColors_cvar) return;
-
-		bool inFreeplay = gameWrapper->IsInFreeplay();
-
-		if (inFreeplay)
+		if (updatedVal)
 		{
-			Teams.UpdateTeamFieldColors(nullptr, !updatedVal, useSingleFreeplayColor_cvar.getBoolValue(), useRGBFreeplayColors_cvar.getBoolValue());
+			// update field colors
+			auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
+			auto useRGBFreeplayColors_cvar = GetCvar(Cvars::useRGBFreeplayColors);
+			if (!useSingleFreeplayColor_cvar || !useRGBFreeplayColors_cvar) return;
+
+			bool inFreeplay = gameWrapper->IsInFreeplay();
+
+			if (inFreeplay)
+			{
+				Teams.UpdateTeamFieldColors(nullptr, !updatedVal, useSingleFreeplayColor_cvar.getBoolValue(), useRGBFreeplayColors_cvar.getBoolValue());
+			}
+			else
+			{
+				AGameEvent_Team_TA* gameEvent = Instances.GetInstanceOf<AGameEvent_Team_TA>();
+				Teams.UpdateTeamFieldColors(gameEvent, !updatedVal);
+			}
+
+			// update HUD colors
+			if (inFreeplay) return;
+
+			auto teamInfos = Instances.GetAllInstancesOf<UGFxData_TeamInfo_TA>();
+			for (UGFxData_TeamInfo_TA* teamInfo : teamInfos)
+			{
+				if (!teamInfo) continue;
+
+				Teams.UpdateTeamHUDColors(teamInfo, !updatedVal);
+			}
 		}
 		else
 		{
-			AGameEvent_Team_TA* gameEvent = Instances.GetInstanceOf<AGameEvent_Team_TA>();
-			Teams.UpdateTeamFieldColors(gameEvent, !updatedVal);
+			Teams.ApplyOgColors();
 		}
-
-		// update HUD colors
-		if (inFreeplay) return;
-
-		Teams.UpdateTeamHUDColors(nullptr, !updatedVal);
 	, updatedVal);
 }
 

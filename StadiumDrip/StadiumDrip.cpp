@@ -34,15 +34,17 @@ void StadiumDrip::onLoad()
 	auto useRGBFreeplayColors_cvar =		RegisterCvar_Bool(Cvars::useRGBFreeplayColors,		false);
 
 	auto useCustomTeamNames_cvar =			RegisterCvar_Bool(Cvars::useCustomTeamNames,		true);
-	auto enableMotD_cvar =					RegisterCvar_Bool(Cvars::enableMotD,				false);
 	auto useCustomGameMsgs_cvar =			RegisterCvar_Bool(Cvars::useCustomGameMsgs,			true);
 	auto useCustomMainMenuLoc_cvar =		RegisterCvar_Bool(Cvars::useCustomMainMenuLoc,		false);
+	auto enableMotD_cvar =					RegisterCvar_Bool(Cvars::enableMotD,				false);
+	auto useSingleMotdColor_cvar =			RegisterCvar_Bool(Cvars::useSingleMotdColor,		false);
+	//auto useGradientMotdColor_cvar =		RegisterCvar_Bool(Cvars::useGradientMotdColor,		false);
 
 	// strings
 	auto selectedAdName_cvar =				RegisterCvar_String(Cvars::selectedAdName,			"");
 	auto blueTeamName_cvar =				RegisterCvar_String(Cvars::blueTeamName,			"crips");
 	auto orangeTeamName_cvar =				RegisterCvar_String(Cvars::orangeTeamName,			"bloods");
-	auto motd_cvar =						RegisterCvar_String(Cvars::motd,					"join my srever bot hax cheats SLL cracked nitro premium ultra deluxe boost service giv me money pls - discord.gg/420ong69frfr");
+	auto motd_cvar =						RegisterCvar_String(Cvars::motd,					"sub to Scrimpf on YT &lt;3");
 
 	auto countdownMsg3_cvar =				RegisterCvar_String(Cvars::countdownMsg3,			"get");
 	auto countdownMsg2_cvar =				RegisterCvar_String(Cvars::countdownMsg2,			"ready");
@@ -63,6 +65,9 @@ void StadiumDrip::onLoad()
 	auto blueTeamFieldColor_cvar =			RegisterCvar_Color(Cvars::blueTeamFieldColor,		"#FF00BC");
 	auto orangeTeamFieldColor_cvar =		RegisterCvar_Color(Cvars::orangeTeamFieldColor,		"#FFF800");
 	auto singleFreeplayColor_cvar =			RegisterCvar_Color(Cvars::singleFreeplayColor,		"#FF2222");
+	auto motdSingleColor_cvar =				RegisterCvar_Color(Cvars::motdSingleColor,			"#F0FF00");
+	//auto motdGradientColorBegin_cvar =		RegisterCvar_Color(Cvars::motdGradientColorBegin,	"#9D00FF");
+	//auto motdGradientColorEnd_cvar =		RegisterCvar_Color(Cvars::motdGradientColorEnd,		"#00BB33");
 
 
 	// ============================ CVAR CHANGED CALLBACKS ===========================
@@ -117,6 +122,7 @@ void StadiumDrip::onLoad()
 
 	// =================================== HOOKS =====================================
 
+	gameWrapper->HookEventPost(Events::LoadingScreenStart,		std::bind(&StadiumDrip::Event_LoadingScreenStart, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::LoadingScreenEnd,		std::bind(&StadiumDrip::Event_LoadingScreenEnd, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::RenderColorArray,		std::bind(&StadiumDrip::Event_RenderColorArray, this, std::placeholders::_1));
 	gameWrapper->HookEventPost(Events::EnterMainMenu,			std::bind(&StadiumDrip::Event_EnterMainMenu, this, std::placeholders::_1));

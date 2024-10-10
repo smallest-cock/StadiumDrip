@@ -20,7 +20,27 @@ void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
 	auto motd_cvar = GetCvar(Cvars::motd);
 	if (!motd_cvar) return;
 
-	Messages.ChangeMOTD(motd_cvar.getStringValue(), true);
+	const std::string rawText = motd_cvar.getStringValue();
+	std::string modifiedText = rawText;
+
+	auto useSingleMotdColor_cvar =		GetCvar(Cvars::useSingleMotdColor);
+	//auto useGradientMotdColor_cvar =	GetCvar(Cvars::useGradientMotdColor);
+	
+	if (useSingleMotdColor_cvar.getBoolValue())
+	{
+		auto motdSingleColor_cvar = GetCvar(Cvars::motdSingleColor);
+		std::string hexColor = Format::LinearColorToHex(motdSingleColor_cvar.getColorValue());
+		modifiedText = "<font color=\"" + hexColor + "\">" + rawText + "</font>";
+	}
+	//else if (useGradientMotdColor_cvar.getBoolValue())
+	//{
+	//	auto motdGradientColorBegin_cvar =	GetCvar(Cvars::motdGradientColorBegin);
+	//	auto motdGradientColorEnd_cvar =	GetCvar(Cvars::motdGradientColorEnd);
+	//	
+	//	// TODO: add color gradient stuff
+	//}
+
+	Messages.ChangeMOTD(modifiedText, true);
 }
 
 

@@ -3,16 +3,11 @@
 
 
 
-//void StadiumDrip::Event_LoadingScreenStart(std::string eventName)
-//{
-//	// ...
-//}
-
-
-//void StadiumDrip::Event_EnterStartState(std::string eventName)
-//{
-//	// ...
-//}
+void StadiumDrip::Event_LoadingScreenStart(std::string eventName)
+{
+	Teams.ogColors.clear();
+	Mainmenu.aMapHasLoaded = true;
+}
 
 
 void StadiumDrip::Event_MenuChanged(std::string eventName)
@@ -96,7 +91,7 @@ void StadiumDrip::Event_TeamNameComponentFuncCalled(ActorWrapper caller, void* p
 	UTeamNameComponent_TA* tnc = reinterpret_cast<UTeamNameComponent_TA*>(caller.memory_address);
 	if (!tnc) return;
 
-	Teams.ChangeNameFromTNC(tnc, nullptr, 0.1f, 5);
+	Teams.ChangeNameFromTNC(tnc, nullptr, 0.01f, 10);	// total duration is 0.1s... can be increased if necessary
 }
 
 
