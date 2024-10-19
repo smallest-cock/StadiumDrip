@@ -101,7 +101,6 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 	void Event_MenuChanged(std::string eventName);
 	void Event_RenderColorArray(std::string eventName);
 	void Event_MainMenuSwitch(std::string eventName);
-	void Event_GameDestroyed(ActorWrapper caller, void* params, std::string eventName);
 	void Event_CountdownBegin(ActorWrapper caller, void* params, std::string eventName);
 	void Event_ReceiveMessage(ActorWrapper caller, void* params, std::string eventName);
 	void Event_EventTeamsCreated(ActorWrapper caller, void* params, std::string eventName);

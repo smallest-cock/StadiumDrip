@@ -28,7 +28,7 @@ void StadiumDrip::onLoad()
 	// =================================== CVARS =====================================
 
 	// bools
-	auto useCustomAds_cvar =				RegisterCvar_Bool(Cvars::useCustomAds,				true);
+	auto useCustomAds_cvar =				RegisterCvar_Bool(Cvars::useCustomAds,				false);
 	auto useCustomTeamColors_cvar =			RegisterCvar_Bool(Cvars::useCustomTeamColors,		true);
 	auto useSingleFreeplayColor_cvar =		RegisterCvar_Bool(Cvars::useSingleFreeplayColor,	false);
 	auto useRGBFreeplayColors_cvar =		RegisterCvar_Bool(Cvars::useRGBFreeplayColors,		false);

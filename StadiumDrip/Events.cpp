@@ -141,20 +141,6 @@ void StadiumDrip::Event_CountdownBegin(ActorWrapper caller, void* params, std::s
 }
 
 
-void StadiumDrip::Event_GameDestroyed(ActorWrapper caller, void* params, std::string eventName)
-{
-	AGameEvent_TA* gameEvent = reinterpret_cast<AGameEvent_TA*>(caller.memory_address);
-	if (!gameEvent) {
-		LOG("AGameEvent_TA* from caller is null!");
-		return;
-	}
-
-	if (!gameEvent->IsPostMatch()) return;
-
-	Messages.ResetCountdownMessages(gameEvent);
-}
-
-
 void StadiumDrip::Event_HandleColorsChanged(ActorWrapper caller, void* params, std::string eventName)
 {
 	if (gameWrapper->IsInFreeplay()) return;
