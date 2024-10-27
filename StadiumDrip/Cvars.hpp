@@ -24,6 +24,7 @@ namespace Cvars
 	const CvarData useCustomTeamColors =		{ "use_custom_team_colors",			"use custom team colors" };
 	const CvarData useSingleFreeplayColor =		{ "use_single_freeplay_color",		"use a single freeplay color instead of custom team colors" };
 	const CvarData useRGBFreeplayColors =		{ "use_rgb_freeplay_colors",		"use RGB stadium colors in freeplay" };
+	const CvarData useAltReplayMapSwitch =		{ "use_alt_replay_map_switch",		"use alternate method to change replay map" };
 
 	const CvarData useCustomTeamNames =			{ "use_custom_team_names",			"use custom team names" };
 	const CvarData useCustomGameMsgs =			{ "use_custom_game_messages",		"use custom game messages" };

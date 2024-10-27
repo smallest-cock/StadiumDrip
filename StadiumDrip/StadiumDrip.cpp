@@ -32,6 +32,7 @@ void StadiumDrip::onLoad()
 	auto useCustomTeamColors_cvar =			RegisterCvar_Bool(Cvars::useCustomTeamColors,		true);
 	auto useSingleFreeplayColor_cvar =		RegisterCvar_Bool(Cvars::useSingleFreeplayColor,	false);
 	auto useRGBFreeplayColors_cvar =		RegisterCvar_Bool(Cvars::useRGBFreeplayColors,		false);
+	auto useAltReplayMapSwitch_cvar =		RegisterCvar_Bool(Cvars::useAltReplayMapSwitch,		false);
 
 	auto useCustomTeamNames_cvar =			RegisterCvar_Bool(Cvars::useCustomTeamNames,		true);
 	auto useCustomGameMsgs_cvar =			RegisterCvar_Bool(Cvars::useCustomGameMsgs,			true);

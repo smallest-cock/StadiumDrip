@@ -661,7 +661,22 @@ void StadiumDrip::MainMenu_Tab()
 // replays tab
 void StadiumDrip::Replays_Tab()
 {
-	GUI::Spacing(4);
+	auto useAltReplayMapSwitch_cvar = GetCvar(Cvars::useAltReplayMapSwitch);
+	if (!useAltReplayMapSwitch_cvar) return;
+
+	GUI::Spacing(2);
+
+	bool useAltReplayMapSwitch = useAltReplayMapSwitch_cvar.getBoolValue();
+	if (ImGui::Checkbox("use alternative method to change replay map", &useAltReplayMapSwitch))
+	{
+		useAltReplayMapSwitch_cvar.setValue(useAltReplayMapSwitch);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Might help if changing replay map isn't working");
+	}
+
+	GUI::Spacing(8);
 
 	ReplayMapsDropdown();
 
