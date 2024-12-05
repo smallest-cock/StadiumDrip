@@ -800,7 +800,7 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 						if (GetGameState() != States::MainMenu) continue;
 
 						GAME_THREAD_EXECUTE(
-							Mainmenu.SetBackground(Mainmenu.backgroundIDs[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
+							Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
 
 							DELAY(1.0f,
 								RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);
@@ -819,7 +819,7 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 					if (GetGameState() != States::MainMenu) continue;
 
 					GAME_THREAD_EXECUTE(
-						Mainmenu.SetBackground(Mainmenu.backgroundIDs[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
+						Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
 						
 						DELAY(1.0f,
 							RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);

@@ -113,7 +113,12 @@ void StadiumDrip::cmd_changeReplayMap(std::vector<std::string> args)
 
 void StadiumDrip::cmd_test(std::vector<std::string> args)
 {
-	// ...
+	if (args.size() < 2) return;
+
+	int mapID = std::stoi(args[1]);
+	EMainMenuBackground bgID = static_cast<EMainMenuBackground>(mapID);
+
+	Mainmenu.SetBackground(bgID, true);
 }
 
 
