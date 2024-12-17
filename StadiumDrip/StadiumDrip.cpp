@@ -56,9 +56,9 @@ void StadiumDrip::onLoad()
 	auto oppScoredMessage_cvar =			RegisterCvar_String(Cvars::oppScoredMessage,		"{Player} is a tryhard!");
 
 	// numbers
-	auto mainMenuX_cvar =					RegisterCvar_Number(Cvars::mainMenuX,				Mainmenu.defaultX);
-	auto mainMenuY_cvar =					RegisterCvar_Number(Cvars::mainMenuY,				Mainmenu.defaultY);
-	auto mainMenuZ_cvar =					RegisterCvar_Number(Cvars::mainMenuZ,				Mainmenu.defaultZ);
+	auto mainMenuX_cvar =					RegisterCvar_Number(Cvars::mainMenuX,				Mainmenu.default_mm_car_X);
+	auto mainMenuY_cvar =					RegisterCvar_Number(Cvars::mainMenuY,				Mainmenu.default_mm_car_Y);
+	auto mainMenuZ_cvar =					RegisterCvar_Number(Cvars::mainMenuZ,				Mainmenu.default_mm_car_Z);
 	auto customFOV_cvar =					RegisterCvar_Number(Cvars::customFOV,				55, true, 1, 170);
 	auto rgbSpeed_cvar =					RegisterCvar_Number(Cvars::rgbSpeed,				0, true, -14, 9);
 
@@ -137,6 +137,12 @@ void StadiumDrip::onLoad()
 	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::EventTeamsCreated,
 		std::bind(&StadiumDrip::Event_EventTeamsCreated, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::EnterPremiumGarage,
+		std::bind(&StadiumDrip::Event_EnterPremiumGarage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::ExitPremiumGarage,
+		std::bind(&StadiumDrip::Event_ExitPremiumGarage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
 	// for HUD colors
 	gameWrapper->HookEventWithCallerPost<ActorWrapper>(Events::HandleColorsChanged,
 		std::bind(&StadiumDrip::Event_HandleColorsChanged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
@@ -174,7 +180,7 @@ void StadiumDrip::onLoad()
 
 	// ===============================================================================
 
-	
+
 	// seems to help reduce game freeze on load
 	DUMMY_THREAD(
 		PreventGameFreezeStuff();

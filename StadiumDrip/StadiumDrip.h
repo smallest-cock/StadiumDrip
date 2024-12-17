@@ -106,6 +106,8 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 	void Event_EventTeamsCreated(ActorWrapper caller, void* params, std::string eventName);
 	void Event_HandleColorsChanged(ActorWrapper caller, void* params, std::string eventName);
 	void Event_HUDTick(ActorWrapper caller, void* params, std::string eventName);
+	void Event_EnterPremiumGarage(ActorWrapper caller, void* params, std::string eventName);
+	void Event_ExitPremiumGarage(ActorWrapper caller, void* params, std::string eventName);
 	
 	void Event_HandleNameChanged(ActorWrapper caller, void* params, std::string eventName);
 	void Event_TeamNameComponentFuncCalled(ActorWrapper caller, void* params, std::string eventName);

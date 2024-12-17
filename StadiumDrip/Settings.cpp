@@ -10,9 +10,9 @@ void StadiumDrip::RenderSettings()
 
 	ImVec2 availableSpace = ImGui::GetContentRegionAvail();
 	availableSpace.y -= 4;		// act as if availableSpace height is 4px smaller, bc for some reason availableSpace height is cap (prevents scroll bars)
-	float headerHeight = 80.0f;
-	float footerHeight = 35.0f;
-	float contentHeight = availableSpace.y - footerHeight;
+	constexpr float headerHeight = 80.0f;
+	constexpr float footerHeight = 35.0f;
+	const float contentHeight = availableSpace.y - footerHeight;
 
 	ImVec2 contentSize = ImVec2(0, contentHeight);
 	ImVec2 footerSize = ImVec2(0, footerHeight);
@@ -610,9 +610,9 @@ void StadiumDrip::MainMenu_Tab()
 			if (ImGui::Button("Reset##mainMenuLocation"))
 			{
 				// reset cvar values
-				mainMenuX_cvar.setValue(Mainmenu.defaultX);
-				mainMenuY_cvar.setValue(Mainmenu.defaultY);
-				mainMenuZ_cvar.setValue(Mainmenu.defaultZ);
+				mainMenuX_cvar.setValue(Mainmenu.default_mm_car_X);
+				mainMenuY_cvar.setValue(Mainmenu.default_mm_car_Y);
+				mainMenuZ_cvar.setValue(Mainmenu.default_mm_car_Z);
 
 				GAME_THREAD_EXECUTE(
 					Mainmenu.ResetLocation(true);
@@ -643,7 +643,7 @@ void StadiumDrip::MainMenu_Tab()
 		if (ImGui::Button("Reset##mainMenuFOV"))
 		{
 			// reset cvar values
-			customFOV_cvar.setValue(Mainmenu.defaultFOV);
+			customFOV_cvar.setValue(Mainmenu.default_mm_FOV);
 
 			GAME_THREAD_EXECUTE(
 				Mainmenu.ResetCameraFOV(true);

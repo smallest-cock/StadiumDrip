@@ -19,6 +19,8 @@ namespace Events
 	constexpr const char* CountdownBegin =					"Function GameEvent_TA.Countdown.BeginState";
 	constexpr const char* ReceiveMessage =					"Function TAGame.PlayerController_TA.ReceiveMessage";
 	constexpr const char* HUDTick =							"Function TAGame.GFxHUD_TA.Tick";
+	constexpr const char* EnterPremiumGarage =				"Function TAGame.PremiumGaragePreviewSet_TA.EnterPremiumGarage";
+	constexpr const char* ExitPremiumGarage =				"Function TAGame.PremiumGaragePreviewSet_TA.ExitPremiumGarage";
 
 	constexpr const char* SetCustomTeamName =				"Function TAGame.TeamNameComponent_TA.SetCustomTeamName";
 	constexpr const char* UpdateTeamName =					"Function TAGame.TeamNameComponent_TA.UpdateTeamName";

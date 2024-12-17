@@ -205,6 +205,24 @@ void StadiumDrip::Event_HUDTick(ActorWrapper caller, void* params, std::string e
 }
 
 
+void StadiumDrip::Event_EnterPremiumGarage(ActorWrapper caller, void* params, std::string eventName)
+{
+	UPremiumGaragePreviewSet_TA* premium_garage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(caller.memory_address);
+	if (!premium_garage) return;
+
+	Mainmenu.restore_turntable_to_premium_garage(premium_garage);
+}
+
+
+void StadiumDrip::Event_ExitPremiumGarage(ActorWrapper caller, void* params, std::string eventName)
+{
+	UPremiumGaragePreviewSet_TA* premium_garage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(caller.memory_address);
+	if (!premium_garage) return;
+
+	Mainmenu.restore_turntable_to_mm(premium_garage);
+}
+
+
 // overwrite any ad texture changes
 void StadiumDrip::Event_MicSetTextureParamValue(ActorWrapper caller, void* params, std::string eventName)
 {
