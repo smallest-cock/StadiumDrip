@@ -39,7 +39,7 @@ void StadiumDrip::onLoad()
 	auto useCustomGameMsgs_cvar =			RegisterCvar_Bool(Cvars::useCustomGameMsgs,			true);
 	auto useCustomMainMenuLoc_cvar =		RegisterCvar_Bool(Cvars::useCustomMainMenuLoc,		false);
 	auto enableMotD_cvar =					RegisterCvar_Bool(Cvars::enableMotD,				false);
-	auto useSingleMotdColor_cvar =			RegisterCvar_Bool(Cvars::useSingleMotdColor,		false);
+	auto useSingleMotdColor_cvar =			RegisterCvar_Bool(Cvars::useSingleMotdColor,		true);
 	//auto useGradientMotdColor_cvar =		RegisterCvar_Bool(Cvars::useGradientMotdColor,		false);
 
 	// strings
@@ -62,13 +62,13 @@ void StadiumDrip::onLoad()
 	auto mainMenuZ_cvar =					RegisterCvar_Number(Cvars::mainMenuZ,				Mainmenu.default_mm_car_Z);
 	auto customFOV_cvar =					RegisterCvar_Number(Cvars::customFOV,				55, true, 1, 170);
 	auto rgbSpeed_cvar =					RegisterCvar_Number(Cvars::rgbSpeed,				0, true, -14, 9);
-	auto motd_font_size_cvar =				RegisterCvar_Number(Cvars::motd_font_size,			25, true, 1, 300);
+	auto motd_font_size_cvar =				RegisterCvar_Number(Cvars::motd_font_size,			20, true, 1, 300);
 
 	// colors
 	auto blueTeamFieldColor_cvar =			RegisterCvar_Color(Cvars::blueTeamFieldColor,		"#FF00BC");
 	auto orangeTeamFieldColor_cvar =		RegisterCvar_Color(Cvars::orangeTeamFieldColor,		"#FFF800");
 	auto singleFreeplayColor_cvar =			RegisterCvar_Color(Cvars::singleFreeplayColor,		"#FF2222");
-	auto motdSingleColor_cvar =				RegisterCvar_Color(Cvars::motdSingleColor,			"#F0FF00");
+	auto motd_color_cvar =					RegisterCvar_Color(Cvars::motd_color,				"#FF00FF");
 	//auto motdGradientColorBegin_cvar =		RegisterCvar_Color(Cvars::motdGradientColorBegin,	"#9D00FF");
 	//auto motdGradientColorEnd_cvar =		RegisterCvar_Color(Cvars::motdGradientColorEnd,		"#00BB33");
 

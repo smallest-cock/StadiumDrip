@@ -56,7 +56,7 @@ namespace Cvars
 	constexpr CvarData blueTeamFieldColor =			CVAR("blue_team_field_color",			"blue team field color");
 	constexpr CvarData orangeTeamFieldColor =		CVAR("orange_team_field_color",			"orange team field color");
 	constexpr CvarData singleFreeplayColor =		CVAR("single_freeplay_color",			"separate (single) freeplay color");
-	constexpr CvarData motdSingleColor =			CVAR("motd_single_color",				"solid color for rolling footer message text");
+	constexpr CvarData motd_color =					CVAR("motd_single_color",				"solid color for rolling footer message text");
 	constexpr CvarData motdGradientColorBegin =		CVAR("motd_gradient_color_begin",		"beginning gradient color for motd");
 	constexpr CvarData motdGradientColorEnd =		CVAR("motd_gradient_color_end",			"end gradient color for motd");
 

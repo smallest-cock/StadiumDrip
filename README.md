@@ -1,13 +1,17 @@
 # Stadium Drip (BakkesMod plugin)
-A plugin to completely swag out your Rocket League experience 🥶💨♿💅💯
+A plugin to completely swag out your Rocket League experience 🥶💨♿💅💯🔥
 
 peep the stadium drip my guy 👀 
 
 deadass
 
+## 🎥 Video Tutorial
 
-<img src='./docs/images/plugin-screenshot-better-color.png' alt="overview" width="600"/>
+<a href='https://youtu.be/91Uc_UaLiwY'>
+  <img src='./docs/images/plugin-screenshot-better-color.png' alt="showcase video" width="600"/>
+</a>
 
+https://youtu.be/91Uc_UaLiwY
 
 ## ✨ Features
 - Change stadium colors in matches and freeplay
@@ -45,8 +49,8 @@ Find the latest version in [Releases](https://github.com/smallest-cock/StadiumDr
 `sd_exit_to_main_menu` | exit to the main menu
 `sd_forfeit` | forfeit the current match
 
-## ☕ Support
+## ❤️ Support
 
-If you enjoy this plugin, consider funding my coffee addiction 🧡
+<br>
 
-<a href="https://www.buymeacoffee.com/sslowdev" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 200px !important;" ></a>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sslowdev)

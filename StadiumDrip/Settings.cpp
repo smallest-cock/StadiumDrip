@@ -311,7 +311,7 @@ void StadiumDrip::Messages_Tab()
 	auto enableMotD_cvar =					GetCvar(Cvars::enableMotD);
 	auto motd_cvar =						GetCvar(Cvars::motd);
 	auto useSingleMotdColor_cvar =			GetCvar(Cvars::useSingleMotdColor);
-	auto motdSingleColor_cvar =				GetCvar(Cvars::motdSingleColor);
+	auto motdSingleColor_cvar =				GetCvar(Cvars::motd_color);
 	auto motd_font_size_cvar =				GetCvar(Cvars::motd_font_size);
 	//auto useGradientMotdColor_cvar =		GetCvar(Cvars::useGradientMotdColor);
 	//auto motdGradientColorBegin_cvar =		GetCvar(Cvars::motdGradientColorBegin);
