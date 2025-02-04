@@ -1,28 +1,15 @@
 #include "pch.h"
 #include "StadiumDrip.h"
-#include "GuiTools.hpp"
 
 
 
 void StadiumDrip::RenderSettings()
 {
-	// ---------------- calculate ImGui::BeginChild sizes ------------------
-
-	ImVec2 availableSpace = ImGui::GetContentRegionAvail();
-	availableSpace.y -= 4;		// act as if availableSpace height is 4px smaller, bc for some reason availableSpace height is cap (prevents scroll bars)
-	constexpr float headerHeight = 80.0f;
-	constexpr float footerHeight = 35.0f;
-	const float contentHeight = availableSpace.y - footerHeight;
-
-	ImVec2 contentSize = ImVec2(0, contentHeight);
-	ImVec2 footerSize = ImVec2(0, footerHeight);
-	ImVec2 headerSize = ImVec2(0, headerHeight);
-
-	// ----------------------------------------------------------------------
+	const float content_height = ImGui::GetContentRegionAvail().y - footer_height;	// available height after accounting for footer
 	
-	if (ImGui::BeginChild("Content#sd", contentSize))
+	if (ImGui::BeginChild("Content", ImVec2(0, content_height)))
 	{
-		GUI::SettingsHeader("Header##sd", pretty_plugin_version, headerSize, false);
+		GUI::SettingsHeader("Header", pretty_plugin_version, ImVec2(0, header_height), false);
 
 		GUI::Spacing(4);
 
@@ -45,7 +32,18 @@ void StadiumDrip::RenderSettings()
 	}
 	ImGui::EndChild();
 
-	GUI::SettingsFooter("Footer##sd", footerSize, availableSpace.x, false);
+
+	// footer
+	const auto remaining_space = ImGui::GetContentRegionAvail();
+
+	if (assets_exist)
+	{
+		GUI::SettingsFooter("Footer", remaining_space, footer_links);
+	}
+	else
+	{
+		GUI::OldSettingsFooter("Footer", remaining_space);
+	}
 }
 
 
@@ -103,16 +101,10 @@ void StadiumDrip::Teams_Tab()
 	if (!blueTeamFieldColor_cvar || !orangeTeamFieldColor_cvar || !useCustomTeamNames_cvar || !blueTeamName_cvar || !orangeTeamName_cvar ||
 		!useCustomTeamColors_cvar || !useSingleFreeplayColor_cvar || !singleFreeplayColor_cvar || !useRGBFreeplayColors_cvar || !rgbSpeed_cvar) return;
 
-	// --------------------- ImGui::BeginChild sizes ------------------------
 
-	ImVec2 parentSize = ImGui::GetContentRegionAvail();
+	const float team_names_height = ImGui::GetContentRegionAvail().y * 0.3f;	// 50% available height
 
-	ImVec2 teamNamesSize = ImVec2(0, parentSize.y * 0.3f - 2);
-	ImVec2 teamColorsSize = ImVec2(0, parentSize.y * 0.7f - 2);
-
-	// ----------------------------------------------------------------------
-
-	if (ImGui::BeginChild("##teamNames", teamNamesSize, true))
+	if (ImGui::BeginChild("teamNames", ImVec2(0, team_names_height), true))
 	{
 		GUI::Spacing(2);
 
@@ -135,7 +127,7 @@ void StadiumDrip::Teams_Tab()
 				blueTeamName_cvar.setValue(blueTeamName);
 			}
 
-			GUI::SameLineSpacing(sameLineSpacing);
+			GUI::SameLineSpacing_relative(sameLineSpacing);
 
 			// custom orange team name
 			std::string orangeTeamName = orangeTeamName_cvar.getStringValue();
@@ -148,20 +140,13 @@ void StadiumDrip::Teams_Tab()
 	}
 	ImGui::EndChild();
 
-	if (ImGui::BeginChild("##teamColors", teamColorsSize, true))
+	if (ImGui::BeginChild("teamColors", ImGui::GetContentRegionAvail(), true))
 	{
-		// --------------------- ImGui::BeginChild sizes ------------------------
-		
-		ImVec2 teamColParentSize = ImGui::GetContentRegionAvail();
-		
-		ImVec2 matchTeamColorsSize = ImVec2(teamColParentSize.x * 0.5f - 4, 0);
-		ImVec2 freeplayColorsSize = ImVec2(teamColParentSize.x * 0.5f - 4, 0);
+		const float match_colors_width = ImGui::GetContentRegionAvail().x * 0.5f;
 
-		// ----------------------------------------------------------------------
-
-		if (ImGui::BeginChild("##matchTeamColors", matchTeamColorsSize, true))
+		if (ImGui::BeginChild("matchTeamColors", ImVec2(match_colors_width, 0), true))
 		{
-			ImGui::TextColored(ImVec4{ 1, 1, 0, 1 }, "Matches");
+			ImGui::TextColored(GUI::Colors::Yellow, "Matches");
 
 			GUI::Spacing(2);
 
@@ -206,9 +191,9 @@ void StadiumDrip::Teams_Tab()
 
 		ImGui::SameLine();
 
-		if (ImGui::BeginChild("##freeplayTeamColors", freeplayColorsSize, true))
+		if (ImGui::BeginChild("freeplayTeamColors", ImGui::GetContentRegionAvail(), true))
 		{
-			ImGui::TextColored(ImVec4{ 1, 1, 0, 1 }, "Freeplay");
+			ImGui::TextColored(GUI::Colors::Yellow, "Freeplay");
 
 			GUI::Spacing(2);
 
@@ -221,7 +206,7 @@ void StadiumDrip::Teams_Tab()
 
 			if (useSingleFreeplayColor)
 			{
-				GUI::SameLineSpacing(30);
+				GUI::SameLineSpacing_relative(30);
 
 				// solid freeplay color
 				LinearColor singleFreeplayColor = singleFreeplayColor_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
@@ -327,6 +312,7 @@ void StadiumDrip::Messages_Tab()
 	auto motd_cvar =						GetCvar(Cvars::motd);
 	auto useSingleMotdColor_cvar =			GetCvar(Cvars::useSingleMotdColor);
 	auto motdSingleColor_cvar =				GetCvar(Cvars::motdSingleColor);
+	auto motd_font_size_cvar =				GetCvar(Cvars::motd_font_size);
 	//auto useGradientMotdColor_cvar =		GetCvar(Cvars::useGradientMotdColor);
 	//auto motdGradientColorBegin_cvar =		GetCvar(Cvars::motdGradientColorBegin);
 	//auto motdGradientColorEnd_cvar =		GetCvar(Cvars::motdGradientColorEnd);
@@ -343,23 +329,16 @@ void StadiumDrip::Messages_Tab()
 	if (!useCustomGameMsgs_cvar || !countdownMsg3_cvar || !countdownMsg2_cvar || !countdownMsg1_cvar || !goMessage_cvar
 		|| !teammateScoredMessage_cvar || !oppScoredMessage_cvar || !userScoredMessage_cvar) return;
 
-	// --------------------- ImGui::BeginChild sizes ------------------------
 
-	ImVec2 parentSize = ImGui::GetContentRegionAvail();
+	const float motd_height = ImGui::GetContentRegionAvail().y * 0.5f;
 
-	ImVec2 footerMsgSectionSize = ImVec2(0, parentSize.y * 0.5f - 2);
-	ImVec2 gameMsgSectionSize = ImVec2(0, parentSize.y * 0.5f - 2);
-
-	// ----------------------------------------------------------------------
-
-
-	if (ImGui::BeginChild("footerMessage##messages", footerMsgSectionSize, true))
+	if (ImGui::BeginChild("customMOTD", ImVec2(0, motd_height), true))
 	{
 		GUI::Spacing(2);
 
 		// enable custom team names checkbox
 		bool enableMotD = enableMotD_cvar.getBoolValue();
-		if (ImGui::Checkbox("rolling footer message", &enableMotD))
+		if (ImGui::Checkbox("Custom message of the day (MOTD)", &enableMotD))
 			enableMotD_cvar.setValue(enableMotD);
 
 		if (enableMotD)
@@ -385,6 +364,14 @@ void StadiumDrip::Messages_Tab()
 				useSingleMotdColor_cvar.setValue(false);
 				//useGradientMotdColor_cvar.setValue(false);
 			}
+			if (ImGui::IsItemHovered())
+			{
+				constexpr const char* tooltip =	"Customize text appearance using the <font> HTML tag:\n\n\t\t<font size=\"25\" color=\"#FF0000\">Big red text</font>" \
+												"\n\nYou can even wrap individual characters in a <font> tag to make colorful designs";
+
+				ImGui::SetTooltip(tooltip);
+			}
+
 			if (ImGui::RadioButton("colored text", &radioState, 1))
 			{
 				useSingleMotdColor_cvar.setValue(true);
@@ -403,7 +390,7 @@ void StadiumDrip::Messages_Tab()
 			if (ImGui::InputText("message", &motd))
 				motd_cvar.setValue(Format::EscapeQuotesHTML(motd));
 
-			GUI::SameLineSpacing(10.0f);
+			GUI::SameLineSpacing_relative(10.0f);
 
 			if (ImGui::Button("Apply"))
 			{
@@ -419,6 +406,15 @@ void StadiumDrip::Messages_Tab()
 				if (ImGui::ColorEdit3("color##motdSingleColor", &motdSingleColor.R, ImGuiColorEditFlags_NoInputs))
 				{
 					motdSingleColor_cvar.setValue(motdSingleColor * 255);
+				}
+
+				GUI::SameLineSpacing_relative(50);
+				ImGui::SetNextItemWidth(100);
+
+				int motd_font_size = motd_font_size_cvar.getIntValue();
+				if (ImGui::InputInt("font size", &motd_font_size))
+				{
+					motd_font_size_cvar.setValue(motd_font_size);
 				}
 			}
 			//else if (useGradientMotdColor)
@@ -439,11 +435,11 @@ void StadiumDrip::Messages_Tab()
 	}
 	ImGui::EndChild();
 
-	if (ImGui::BeginChild("gameMessages##messages", gameMsgSectionSize, true))
+	if (ImGui::BeginChild("gameMessages", ImGui::GetContentRegionAvail(), true))
 	{
 		// enable custom team names checkbox
 		bool useCustomGameMsgs = useCustomGameMsgs_cvar.getBoolValue();
-		if (ImGui::Checkbox("custom game messages", &useCustomGameMsgs))
+		if (ImGui::Checkbox("Custom game messages", &useCustomGameMsgs))
 			useCustomGameMsgs_cvar.setValue(useCustomGameMsgs);
 
 		if (useCustomGameMsgs)
@@ -512,10 +508,6 @@ void StadiumDrip::Messages_Tab()
 
 	}
 	ImGui::EndChild();
-	
-
-	//std::string numInvincibleMsgs = "invincibleMessages size: " + std::to_string(Messages.invincibleMessages.size());
-	//ImGui::Text(numInvincibleMsgs.c_str());
 }
 
 
@@ -530,16 +522,9 @@ void StadiumDrip::MainMenu_Tab()
 	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar || !customFOV_cvar || !useCustomMainMenuLoc_cvar) return;
 
 
-	// --------------------- ImGui::BeginChild sizes ------------------------
+	const float mm_location_height = ImGui::GetContentRegionAvail().y * 0.6f;
 
-	ImVec2 parentSize = ImGui::GetContentRegionAvail();
-
-	ImVec2 mainMenuLocationSectionSize =	ImVec2(0, parentSize.y * 0.6f - 2);
-	ImVec2 customFOVSectionSize =			ImVec2(0, parentSize.y * 0.4f - 2);
-
-	// ----------------------------------------------------------------------
-
-	if (ImGui::BeginChild("##mainMenuLocation", mainMenuLocationSectionSize, true))
+	if (ImGui::BeginChild("mainMenuLocation", ImVec2(0, mm_location_height), true))
 	{
 		GUI::Spacing(2);
 
@@ -605,7 +590,7 @@ void StadiumDrip::MainMenu_Tab()
 				, newLocation);
 			}
 
-			GUI::SameLineSpacing(25);
+			GUI::SameLineSpacing_relative(25);
 
 			if (ImGui::Button("Reset##mainMenuLocation"))
 			{
@@ -622,8 +607,7 @@ void StadiumDrip::MainMenu_Tab()
 	}
 	ImGui::EndChild();
 
-
-	if (ImGui::BeginChild("##customFOV", customFOVSectionSize, true))
+	if (ImGui::BeginChild("customFOV", ImGui::GetContentRegionAvail(), true))
 	{
 		GUI::Spacing(2);
 
@@ -638,7 +622,7 @@ void StadiumDrip::MainMenu_Tab()
 			, customFOV);
 		}
 
-		GUI::SameLineSpacing(25);
+		GUI::SameLineSpacing_relative(25);
 
 		if (ImGui::Button("Reset##mainMenuFOV"))
 		{
@@ -764,25 +748,25 @@ void StadiumDrip::AdTexturesDropdown()
 
 void StadiumDrip::MainMenuBackgroundsDropdown()
 {
-	if (Mainmenu.backgroundNames.empty())
+	if (Mainmenu.bg_dropdown_names.empty())
 	{
 		ImGui::Text("No main menu backgrounds found....");
 		return;
 	}
 
 	char searchBuffer[128] = "";  // Buffer for the search input
-	const char* previewValue = Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex].c_str();
+	const char* previewValue = Mainmenu.bg_dropdown_names[Mainmenu.selected_bg_dropdown_index].c_str();
 
 	if (ImGui::BeginSearchableCombo("background##backgroundsDropdown", previewValue, searchBuffer, sizeof(searchBuffer), "search..."))
 	{
 		// convert search text to lower
 		std::string searchQuery = Format::ToLower(searchBuffer);
 
-		for (int i = 0; i < Mainmenu.backgroundNames.size(); i++)
+		for (int i = 0; i < Mainmenu.bg_dropdown_names.size(); i++)
 		{
 			ImGui::PushID(i);
 
-			std::string bgName = Mainmenu.backgroundNames[i];
+			std::string bgName = Mainmenu.bg_dropdown_names[i];
 
 			// convert title text to lower
 			std::string bgNameLower = Format::ToLower(bgName);
@@ -792,15 +776,15 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 			{
 				if (bgNameLower.find(searchQuery) != std::string::npos)
 				{
-					if (ImGui::Selectable(bgName.c_str(), Mainmenu.selectedBackgroundIndex == i))
+					if (ImGui::Selectable(bgName.c_str(), Mainmenu.selected_bg_dropdown_index == i))
 					{
-						Mainmenu.selectedBackgroundIndex = i;
+						Mainmenu.selected_bg_dropdown_index = i;
 
 						// do something when a bg is selected ... 
 						if (GetGameState() != States::MainMenu) continue;
 
 						GAME_THREAD_EXECUTE(
-							Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
+							Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.bg_dropdown_names[Mainmenu.selected_bg_dropdown_index]], true);
 
 							DELAY(1.0f,
 								RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);
@@ -811,15 +795,15 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 			}
 			else
 			{
-				if (ImGui::Selectable(bgName.c_str(), Mainmenu.selectedBackgroundIndex == i))
+				if (ImGui::Selectable(bgName.c_str(), Mainmenu.selected_bg_dropdown_index == i))
 				{
-					Mainmenu.selectedBackgroundIndex = i;
+					Mainmenu.selected_bg_dropdown_index = i;
 
 					// do something when a bg is selected ...
 					if (GetGameState() != States::MainMenu) continue;
 
 					GAME_THREAD_EXECUTE(
-						Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.backgroundNames[Mainmenu.selectedBackgroundIndex]], true);
+						Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.bg_dropdown_names[Mainmenu.selected_bg_dropdown_index]], true);
 						
 						DELAY(1.0f,
 							RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);

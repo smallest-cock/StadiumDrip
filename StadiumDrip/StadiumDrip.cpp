@@ -23,6 +23,7 @@ void StadiumDrip::onLoad()
 	Teams.Initialize(gameWrapper);
 	Mainmenu.Initialize(gameWrapper);
 	Replays.Initialize(gameWrapper);
+	gui_footer_init();
 
 
 	// =================================== CVARS =====================================
@@ -61,6 +62,7 @@ void StadiumDrip::onLoad()
 	auto mainMenuZ_cvar =					RegisterCvar_Number(Cvars::mainMenuZ,				Mainmenu.default_mm_car_Z);
 	auto customFOV_cvar =					RegisterCvar_Number(Cvars::customFOV,				55, true, 1, 170);
 	auto rgbSpeed_cvar =					RegisterCvar_Number(Cvars::rgbSpeed,				0, true, -14, 9);
+	auto motd_font_size_cvar =				RegisterCvar_Number(Cvars::motd_font_size,			25, true, 1, 300);
 
 	// colors
 	auto blueTeamFieldColor_cvar =			RegisterCvar_Color(Cvars::blueTeamFieldColor,		"#FF00BC");

@@ -9,6 +9,7 @@
 #include "Macros.hpp"
 #include "Events.hpp"
 #include "Cvars.hpp"
+#include "GuiTools.hpp"
 #include "Components/Includes.hpp"
 
 
@@ -25,9 +26,10 @@ enum States : uint8_t
 };
 
 
-class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
-	,public SettingsWindowBase // Uncomment if you wanna render your own tab in the settings menu
-	,public PluginWindowBase // Uncomment if you want to render your own plugin window
+class StadiumDrip:
+	public BakkesMod::Plugin::BakkesModPlugin,
+	public SettingsWindowBase,
+	public PluginWindowBase
 {
 	//Boilerplate
 	void onLoad() override;
@@ -120,8 +122,8 @@ class StadiumDrip: public BakkesMod::Plugin::BakkesModPlugin
 
 public:
 	// GUI
-	void RenderSettings() override; // Uncomment if you wanna render your own tab in the settings menu
-	void RenderWindow() override; // Uncomment if you want to render your own plugin window
+	void RenderSettings() override;
+	void RenderWindow() override;
 	void AdTexturesDropdown();
 	void MainMenuBackgroundsDropdown();
 	void ReplayMapsDropdown();
@@ -134,4 +136,16 @@ public:
 	// general width & spacing
 	float itemWidth = 200;
 	float sameLineSpacing = itemWidth / 8;    // ~25 px
+
+	// header/footer stuff
+	void gui_footer_init();
+	bool assets_exist = false;
+	std::shared_ptr<GUI::FooterLinks> footer_links;
+
+	static constexpr float header_height =					80.0f;
+	static constexpr float footer_height =					40.0f;
+	static constexpr float footer_img_height =				25.0f;
+
+	static constexpr const wchar_t* github_link =			L"https://github.com/smallest-cock/StadiumDrip";
+	static constexpr const char* github_link_tooltip =		"GitHub page";
 };

@@ -28,9 +28,12 @@ void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
 	
 	if (useSingleMotdColor_cvar.getBoolValue())
 	{
+		auto motd_font_size_cvar =	GetCvar(Cvars::motd_font_size);
 		auto motdSingleColor_cvar = GetCvar(Cvars::motdSingleColor);
-		std::string hexColor = Format::LinearColorToHex(motdSingleColor_cvar.getColorValue());
-		modifiedText = "<font color=\"" + hexColor + "\">" + rawText + "</font>";
+
+		const int font_size = motd_font_size_cvar.getIntValue();
+		const std::string hexColor = Format::LinearColorToHex(motdSingleColor_cvar.getColorValue());
+		modifiedText = "<font size=\"" + std::to_string(font_size) + "\" color=\"" + hexColor + "\">" + rawText + "</font>";
 	}
 	//else if (useGradientMotdColor_cvar.getBoolValue())
 	//{

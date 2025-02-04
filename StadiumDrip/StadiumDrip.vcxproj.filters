@@ -168,6 +168,9 @@
     <ClCompile Include="Components\Components\Replays.cpp">
       <Filter>Components\Components</Filter>
     </ClCompile>
+    <ClCompile Include="GuiTools.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui_rangeslider.h">
