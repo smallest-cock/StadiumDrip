@@ -3,7 +3,7 @@
 
 
 
-void StadiumDrip::RunCommand(const Cvars::CvarData& command, float delaySeconds)
+void StadiumDrip::RunCommand(const CvarData& command, float delaySeconds)
 {
 	if (delaySeconds == 0)
 	{
@@ -18,7 +18,7 @@ void StadiumDrip::RunCommand(const Cvars::CvarData& command, float delaySeconds)
 }
 
 
-void StadiumDrip::RunCommandInterval(const Cvars::CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand)
+void StadiumDrip::RunCommandInterval(const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand)
 {
 	if (!delayFirstCommand)
 	{
@@ -33,7 +33,7 @@ void StadiumDrip::RunCommandInterval(const Cvars::CvarData& command, int numInte
 }
 
 
-void StadiumDrip::AutoRunCommand(const Cvars::CvarData& autoRunBool, const Cvars::CvarData& command, float delaySeconds)
+void StadiumDrip::AutoRunCommand(const CvarData& autoRunBool, const CvarData& command, float delaySeconds)
 {
 	auto autoRunBool_cvar = GetCvar(autoRunBool);
 	if (!autoRunBool_cvar || !autoRunBool_cvar.getBoolValue()) return;
@@ -42,7 +42,7 @@ void StadiumDrip::AutoRunCommand(const Cvars::CvarData& autoRunBool, const Cvars
 }
 
 
-void StadiumDrip::AutoRunCommandInterval(const Cvars::CvarData& autoRunBool, const Cvars::CvarData& command,
+void StadiumDrip::AutoRunCommandInterval(const CvarData& autoRunBool, const CvarData& command,
 	int numIntervals,float delaySeconds, bool delayFirstCommand)
 {
 	auto autoRunBool_cvar = GetCvar(autoRunBool);
@@ -54,7 +54,7 @@ void StadiumDrip::AutoRunCommandInterval(const Cvars::CvarData& autoRunBool, con
 
 void StadiumDrip::TickRGB()
 {
-	auto rgbSpeed_cvar = GetCvar(Cvars::rgbSpeed);
+	auto rgbSpeed_cvar = GetCvar(Cvars::rgb_speed);
 	if (!rgbSpeed_cvar) return;
 
 	GRainbowColor::TickRGB(rgbSpeed_cvar.getIntValue(), defaultRGBSpeed);
@@ -64,18 +64,18 @@ void StadiumDrip::TickRGB()
 void StadiumDrip::ApplyMainMenuCamSettings()
 {
 	// custom FOV
-	auto customFOV_cvar = GetCvar(Cvars::customFOV);
+	auto customFOV_cvar = GetCvar(Cvars::custom_fov);
 	if (!customFOV_cvar) return;
 
 	Mainmenu.SetCameraFOV(customFOV_cvar.getFloatValue());
 
 	// custom location
-	auto useCustomMainMenuLoc_cvar = GetCvar(Cvars::useCustomMainMenuLoc);
+	auto useCustomMainMenuLoc_cvar = GetCvar(Cvars::use_custom_mm_location);
 	if (!useCustomMainMenuLoc_cvar || !useCustomMainMenuLoc_cvar.getBoolValue()) return;
 
-	auto mainMenuX_cvar = GetCvar(Cvars::mainMenuX);
-	auto mainMenuY_cvar = GetCvar(Cvars::mainMenuY);
-	auto mainMenuZ_cvar = GetCvar(Cvars::mainMenuZ);
+	auto mainMenuX_cvar = GetCvar(Cvars::main_menu_X);
+	auto mainMenuY_cvar = GetCvar(Cvars::main_menu_Y);
+	auto mainMenuZ_cvar = GetCvar(Cvars::main_menu_Z);
 	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar) return;
 
 	Mainmenu.SetLocation({ mainMenuX_cvar.getFloatValue(), mainMenuY_cvar.getFloatValue(), mainMenuZ_cvar.getFloatValue() });
@@ -89,17 +89,17 @@ void StadiumDrip::ApplyCustomMatchColors()
 	bool inFreeplay = gameWrapper->IsInFreeplay();
 
 	// use RGB bool
-	auto useRGBFreeplayColors_cvar = GetCvar(Cvars::useRGBFreeplayColors);
+	auto useRGBFreeplayColors_cvar = GetCvar(Cvars::use_rgb_freeplay_colors);
 	if (!useRGBFreeplayColors_cvar) return;
 	bool useRGBFreeplayColors = useRGBFreeplayColors_cvar.getBoolValue();
 
 	// use solid freeplay color bool
-	auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
+	auto useSingleFreeplayColor_cvar = GetCvar(Cvars::use_single_freeplay_color);
 	if (!useSingleFreeplayColor_cvar) return;
 	bool useSingleFreeplayColor = useSingleFreeplayColor_cvar.getBoolValue();
 
 	// use custom team colors bool
-	auto useCustomTeamColors_cvar = GetCvar(Cvars::useCustomTeamColors);
+	auto useCustomTeamColors_cvar = GetCvar(Cvars::use_custom_team_colors);
 	if (!useCustomTeamColors_cvar) return;
 	bool setOGColors = !useCustomTeamColors_cvar.getBoolValue();
 

@@ -6,10 +6,10 @@
 void StadiumDrip::RenderSettings()
 {
 	const float content_height = ImGui::GetContentRegionAvail().y - footer_height;	// available height after accounting for footer
-	
-	if (ImGui::BeginChild("Content", ImVec2(0, content_height)))
+
+	if (ImGui::BeginChild("PluginSettingsSection", ImVec2(0, content_height)))
 	{
-		GUI::SettingsHeader("Header", pretty_plugin_version, ImVec2(0, header_height), false);
+		GUI::alt_settings_header("Plugin made by S S L o w", pretty_plugin_version);
 
 		GUI::Spacing(4);
 
@@ -32,18 +32,7 @@ void StadiumDrip::RenderSettings()
 	}
 	ImGui::EndChild();
 
-
-	// footer
-	const auto remaining_space = ImGui::GetContentRegionAvail();
-
-	if (assets_exist)
-	{
-		GUI::SettingsFooter("Footer", remaining_space, footer_links);
-	}
-	else
-	{
-		GUI::OldSettingsFooter("Footer", remaining_space);
-	}
+	GUI::alt_settings_footer("Need help? Join the Discord", "https://discord.gg/d5ahhQmJbJ");
 }
 
 
@@ -86,16 +75,16 @@ void StadiumDrip::RenderWindow()
 // teams tab
 void StadiumDrip::Teams_Tab()
 {
-	auto blueTeamFieldColor_cvar =      GetCvar(Cvars::blueTeamFieldColor);
-	auto orangeTeamFieldColor_cvar =    GetCvar(Cvars::orangeTeamFieldColor);
-	auto useCustomTeamNames_cvar =      GetCvar(Cvars::useCustomTeamNames);
-	auto blueTeamName_cvar =            GetCvar(Cvars::blueTeamName);
-	auto orangeTeamName_cvar =          GetCvar(Cvars::orangeTeamName);
-	auto useCustomTeamColors_cvar =		GetCvar(Cvars::useCustomTeamColors);
-	auto useSingleFreeplayColor_cvar =  GetCvar(Cvars::useSingleFreeplayColor);
-	auto singleFreeplayColor_cvar =     GetCvar(Cvars::singleFreeplayColor);
-	auto useRGBFreeplayColors_cvar =    GetCvar(Cvars::useRGBFreeplayColors);
-	auto rgbSpeed_cvar =				GetCvar(Cvars::rgbSpeed);
+	auto blueTeamFieldColor_cvar =      GetCvar(Cvars::blue_team_color);
+	auto orangeTeamFieldColor_cvar =    GetCvar(Cvars::orange_team_color);
+	auto useCustomTeamNames_cvar =      GetCvar(Cvars::use_custom_team_names);
+	auto blueTeamName_cvar =            GetCvar(Cvars::blue_team_name);
+	auto orangeTeamName_cvar =          GetCvar(Cvars::orange_team_name);
+	auto useCustomTeamColors_cvar =		GetCvar(Cvars::use_custom_team_colors);
+	auto useSingleFreeplayColor_cvar =  GetCvar(Cvars::use_single_freeplay_color);
+	auto singleFreeplayColor_cvar =     GetCvar(Cvars::single_freeplay_color);
+	auto useRGBFreeplayColors_cvar =    GetCvar(Cvars::use_rgb_freeplay_colors);
+	auto rgbSpeed_cvar =				GetCvar(Cvars::rgb_speed);
 
 	// if any is null, they prolly all are...
 	if (!blueTeamFieldColor_cvar || !orangeTeamFieldColor_cvar || !useCustomTeamNames_cvar || !blueTeamName_cvar || !orangeTeamName_cvar ||
@@ -267,7 +256,7 @@ void StadiumDrip::Teams_Tab()
 // ads tab
 void StadiumDrip::Ads_Tab()
 {
-	auto useCustomAds_cvar = GetCvar(Cvars::useCustomAds);
+	auto useCustomAds_cvar = GetCvar(Cvars::use_custom_ads);
 	if (!useCustomAds_cvar) return;
 
 	GUI::Spacing(4);
@@ -308,24 +297,24 @@ void StadiumDrip::Ads_Tab()
 // messages tab
 void StadiumDrip::Messages_Tab()
 {
-	auto enableMotD_cvar =					GetCvar(Cvars::enableMotD);
+	auto enableMotD_cvar =					GetCvar(Cvars::enable_motd);
 	auto motd_cvar =						GetCvar(Cvars::motd);
-	auto useSingleMotdColor_cvar =			GetCvar(Cvars::useSingleMotdColor);
-	auto motdSingleColor_cvar =				GetCvar(Cvars::motd_color);
+	auto useSingleMotdColor_cvar =			GetCvar(Cvars::use_single_motd_color);
+	auto motdSingleColor_cvar =				GetCvar(Cvars::motd_single_color);
 	auto motd_font_size_cvar =				GetCvar(Cvars::motd_font_size);
 	//auto useGradientMotdColor_cvar =		GetCvar(Cvars::useGradientMotdColor);
 	//auto motdGradientColorBegin_cvar =		GetCvar(Cvars::motdGradientColorBegin);
 	//auto motdGradientColorEnd_cvar =		GetCvar(Cvars::motdGradientColorEnd);
 	if (!enableMotD_cvar || !motd_cvar || !useSingleMotdColor_cvar) return;
 
-	auto useCustomGameMsgs_cvar =       GetCvar(Cvars::useCustomGameMsgs);
-	auto countdownMsg3_cvar =           GetCvar(Cvars::countdownMsg3);
-	auto countdownMsg2_cvar =           GetCvar(Cvars::countdownMsg2);
-	auto countdownMsg1_cvar =           GetCvar(Cvars::countdownMsg1);
-	auto goMessage_cvar =               GetCvar(Cvars::goMessage);
-	auto userScoredMessage_cvar =       GetCvar(Cvars::userScoredMessage);
-	auto teammateScoredMessage_cvar =   GetCvar(Cvars::teammateScoredMessage);
-	auto oppScoredMessage_cvar =        GetCvar(Cvars::oppScoredMessage);
+	auto useCustomGameMsgs_cvar =       GetCvar(Cvars::use_custom_game_messages);
+	auto countdownMsg3_cvar =           GetCvar(Cvars::countdown_msg_3);
+	auto countdownMsg2_cvar =           GetCvar(Cvars::countdown_msg_2);
+	auto countdownMsg1_cvar =           GetCvar(Cvars::countdown_msg_1);
+	auto goMessage_cvar =               GetCvar(Cvars::go_message);
+	auto userScoredMessage_cvar =       GetCvar(Cvars::user_scored_msg);
+	auto teammateScoredMessage_cvar =   GetCvar(Cvars::teammate_scored_msg);
+	auto oppScoredMessage_cvar =        GetCvar(Cvars::opponent_scored_msg);
 	if (!useCustomGameMsgs_cvar || !countdownMsg3_cvar || !countdownMsg2_cvar || !countdownMsg1_cvar || !goMessage_cvar
 		|| !teammateScoredMessage_cvar || !oppScoredMessage_cvar || !userScoredMessage_cvar) return;
 
@@ -395,7 +384,7 @@ void StadiumDrip::Messages_Tab()
 			if (ImGui::Button("Apply"))
 			{
 				GAME_THREAD_EXECUTE(
-					RunCommand(Cvars::changeMessageOfTheDay);
+					RunCommand(Commands::apply_motd);
 				);
 			}
 
@@ -514,11 +503,11 @@ void StadiumDrip::Messages_Tab()
 // main menu tab
 void StadiumDrip::MainMenu_Tab()
 {
-	auto useCustomMainMenuLoc_cvar =	GetCvar(Cvars::useCustomMainMenuLoc);
-	auto mainMenuX_cvar =				GetCvar(Cvars::mainMenuX);
-	auto mainMenuY_cvar =				GetCvar(Cvars::mainMenuY);
-	auto mainMenuZ_cvar =				GetCvar(Cvars::mainMenuZ);
-	auto customFOV_cvar =				GetCvar(Cvars::customFOV);
+	auto useCustomMainMenuLoc_cvar =	GetCvar(Cvars::use_custom_mm_location);
+	auto mainMenuX_cvar =				GetCvar(Cvars::main_menu_X);
+	auto mainMenuY_cvar =				GetCvar(Cvars::main_menu_Y);
+	auto mainMenuZ_cvar =				GetCvar(Cvars::main_menu_Z);
+	auto customFOV_cvar =				GetCvar(Cvars::custom_fov);
 	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar || !customFOV_cvar || !useCustomMainMenuLoc_cvar) return;
 
 
@@ -645,7 +634,7 @@ void StadiumDrip::MainMenu_Tab()
 // replays tab
 void StadiumDrip::Replays_Tab()
 {
-	auto useAltReplayMapSwitch_cvar = GetCvar(Cvars::useAltReplayMapSwitch);
+	auto useAltReplayMapSwitch_cvar = GetCvar(Cvars::use_alt_replay_map_switch);
 	if (!useAltReplayMapSwitch_cvar) return;
 
 	GUI::Spacing(2);
@@ -678,7 +667,7 @@ void StadiumDrip::Replays_Tab()
 void StadiumDrip::AdTexturesDropdown()
 {
 	// cvars
-	auto selectedAdNameCvar = GetCvar(Cvars::selectedAdName);
+	auto selectedAdNameCvar = GetCvar(Cvars::selected_ad_name);
 	if (!selectedAdNameCvar) return;
 
 
@@ -718,7 +707,7 @@ void StadiumDrip::AdTexturesDropdown()
 						selectedAdNameCvar.setValue(adTexName);
 
 						GAME_THREAD_EXECUTE(
-							RunCommand(Cvars::applyAdTexture);
+							RunCommand(Commands::apply_ad_texture);
 						);
 					}
 				}
@@ -733,7 +722,7 @@ void StadiumDrip::AdTexturesDropdown()
 					selectedAdNameCvar.setValue(adTexName);
 
 					GAME_THREAD_EXECUTE(
-						RunCommand(Cvars::applyAdTexture);
+						RunCommand(Commands::apply_ad_texture);
 					);
 				}
 			}
@@ -787,7 +776,7 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 							Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.bg_dropdown_names[Mainmenu.selected_bg_dropdown_index]], true);
 
 							DELAY(1.0f,
-								RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);
+								RunCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
 							);
 						);
 					}
@@ -806,7 +795,7 @@ void StadiumDrip::MainMenuBackgroundsDropdown()
 						Mainmenu.SetBackground(Mainmenu.working_mmbg_ids[Mainmenu.bg_dropdown_names[Mainmenu.selected_bg_dropdown_index]], true);
 						
 						DELAY(1.0f,
-							RunCommandInterval(Cvars::applyAdTexture, 3, 1.0f, true);
+							RunCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
 						);
 					);
 				}

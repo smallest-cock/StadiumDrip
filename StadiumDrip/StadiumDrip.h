@@ -37,19 +37,19 @@ class StadiumDrip:
 
 
 	// cvar helper stuff
-	CVarWrapper RegisterCvar_Bool(const Cvars::CvarData& cvar, bool startingValue);
-	CVarWrapper RegisterCvar_String(const Cvars::CvarData& cvar, const std::string& startingValue);
-	CVarWrapper RegisterCvar_Number(const Cvars::CvarData& cvar, float startingValue, bool hasMinMax = false, float min = 0, float max = 0);
-	CVarWrapper RegisterCvar_Color(const Cvars::CvarData& cvar, const std::string& startingValue);
-	void RegisterCommand(const Cvars::CvarData& cvar, std::function<void(std::vector<std::string>)> callback);
-	CVarWrapper GetCvar(const Cvars::CvarData& cvar);
+	CVarWrapper RegisterCvar_Bool(const CvarData& cvar, bool startingValue);
+	CVarWrapper RegisterCvar_String(const CvarData& cvar, const std::string& startingValue);
+	CVarWrapper RegisterCvar_Number(const CvarData& cvar, float startingValue, bool hasMinMax = false, float min = 0, float max = 0);
+	CVarWrapper RegisterCvar_Color(const CvarData& cvar, const std::string& startingValue);
+	void RegisterCommand(const CvarData& cvar, std::function<void(std::vector<std::string>)> callback);
+	CVarWrapper GetCvar(const CvarData& cvar);
 
-	void RunCommand(const Cvars::CvarData& command, float delaySeconds = 0);
-	void AutoRunCommand(const Cvars::CvarData& autoRunBool, const Cvars::CvarData& command, float delaySeconds = 0);
-	void RunCommandInterval(const Cvars::CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand = false);
+	void RunCommand(const CvarData& command, float delaySeconds = 0);
+	void AutoRunCommand(const CvarData& autoRunBool, const CvarData& command, float delaySeconds = 0);
+	void RunCommandInterval(const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand = false);
 	void AutoRunCommandInterval(
-		const Cvars::CvarData& autoRunBool,
-		const Cvars::CvarData& command,
+		const CvarData& autoRunBool,
+		const CvarData& command,
 		int numIntervals,
 		float delaySeconds,
 		bool delayFirstCommand = false);
@@ -78,6 +78,7 @@ class StadiumDrip:
 	void cmd_exitToMainMenu(std::vector<std::string> args);
 	void cmd_forfeit(std::vector<std::string> args);
 	void cmd_changeReplayMap(std::vector<std::string> args);
+	void cmd_change_mainmenu_bg(std::vector<std::string> args);
 	void cmd_test(std::vector<std::string> args);
 	void cmd_test2(std::vector<std::string> args);
 	void cmd_test3(std::vector<std::string> args);
@@ -103,6 +104,7 @@ class StadiumDrip:
 	void Event_MenuChanged(std::string eventName);
 	void Event_RenderColorArray(std::string eventName);
 	void Event_MainMenuSwitch(std::string eventName);
+	void Event_GFxData_StartMenu_TA_ProgressToMainMenu(ActorWrapper caller, void* params, std::string eventName);
 	void Event_CountdownBegin(ActorWrapper caller, void* params, std::string eventName);
 	void Event_ReceiveMessage(ActorWrapper caller, void* params, std::string eventName);
 	void Event_EventTeamsCreated(ActorWrapper caller, void* params, std::string eventName);

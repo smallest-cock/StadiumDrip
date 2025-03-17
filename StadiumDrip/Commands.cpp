@@ -5,16 +5,36 @@
 
 void StadiumDrip::cmd_applyAdTexture(std::vector<std::string> args)
 {
-	auto useCustomAds_cvar = GetCvar(Cvars::useCustomAds);
+	auto useCustomAds_cvar = GetCvar(Cvars::use_custom_ads);
 	if (!useCustomAds_cvar || !useCustomAds_cvar.getBoolValue()) return;
 
 	Textures.ApplySelectedAdTexture();
 }
 
 
+void StadiumDrip::cmd_change_mainmenu_bg(std::vector<std::string> args)
+{
+	if (args.size() < 2)
+	{
+		LOG("Usage:\tchange_mainmenu_bg <background_id_num>");
+		return;
+	}
+
+	int int_id = std::stoi(args[1]);
+	if (int_id < 0 || int_id > 255) return;
+
+	EMainMenuBackground bg_id = static_cast<EMainMenuBackground>(int_id);
+	Mainmenu.SetBackground(bg_id, true);
+
+	DELAY(1.0f,
+		RunCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
+	);
+}
+
+
 void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
 {
-	auto enableMotD_cvar = GetCvar(Cvars::enableMotD);
+	auto enableMotD_cvar = GetCvar(Cvars::enable_motd);
 	if (!enableMotD_cvar || !enableMotD_cvar.getBoolValue()) return;
 
 	auto motd_cvar = GetCvar(Cvars::motd);
@@ -23,13 +43,13 @@ void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
 	const std::string rawText = Format::UnescapeQuotesHTML(motd_cvar.getStringValue());
 	std::string modifiedText = rawText;
 
-	auto useSingleMotdColor_cvar =		GetCvar(Cvars::useSingleMotdColor);
+	auto useSingleMotdColor_cvar =		GetCvar(Cvars::use_single_motd_color);
 	//auto useGradientMotdColor_cvar =	GetCvar(Cvars::useGradientMotdColor);
 	
 	if (useSingleMotdColor_cvar.getBoolValue())
 	{
 		auto motd_font_size_cvar =	GetCvar(Cvars::motd_font_size);
-		auto motdSingleColor_cvar = GetCvar(Cvars::motd_color);
+		auto motdSingleColor_cvar = GetCvar(Cvars::motd_single_color);
 
 		const int font_size = motd_font_size_cvar.getIntValue();
 		const std::string hexColor = Format::LinearColorToHex(motdSingleColor_cvar.getColorValue());

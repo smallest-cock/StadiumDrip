@@ -31,7 +31,7 @@ void StadiumDrip::changed_singleFreeplayColor(std::string cvarName, CVarWrapper 
 
 	if (Teams.currentlySettingColor || !gameWrapper->IsInFreeplay()) return;
 
-	auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
+	auto useSingleFreeplayColor_cvar = GetCvar(Cvars::use_single_freeplay_color);
 	if (!useSingleFreeplayColor_cvar || !useSingleFreeplayColor_cvar.getBoolValue()) return;
 
 	GAME_THREAD_EXECUTE(
@@ -45,7 +45,7 @@ void StadiumDrip::changed_blueTeamName(std::string cvarName, CVarWrapper updated
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
-	auto orangeTeamName_cvar = GetCvar(Cvars::orangeTeamName);
+	auto orangeTeamName_cvar = GetCvar(Cvars::orange_team_name);
 	std::string orangeTeamName = orangeTeamName_cvar.getStringValue();
 
 	GAME_THREAD_EXECUTE_CAPTURE(
@@ -60,7 +60,7 @@ void StadiumDrip::changed_orangeTeamName(std::string cvarName, CVarWrapper updat
 {
 	std::string updatedVal = updatedCvar.getStringValue();
 
-	auto blueTeamName_cvar = GetCvar(Cvars::blueTeamName);
+	auto blueTeamName_cvar = GetCvar(Cvars::blue_team_name);
 	std::string blueTeamName = blueTeamName_cvar.getStringValue();
 
 	GAME_THREAD_EXECUTE_CAPTURE(
@@ -80,7 +80,7 @@ void StadiumDrip::changed_enableMotD(std::string cvarName, CVarWrapper updatedCv
 	if (updatedVal)
 	{
 		GAME_THREAD_EXECUTE(
-			RunCommand(Cvars::changeMessageOfTheDay);
+			RunCommand(Commands::apply_motd);
 		);
 	} 
 	else
@@ -106,8 +106,8 @@ void StadiumDrip::changed_useCustomTeamColors(std::string cvarName, CVarWrapper 
 		if (updatedVal)
 		{
 			// update field colors
-			auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
-			auto useRGBFreeplayColors_cvar = GetCvar(Cvars::useRGBFreeplayColors);
+			auto useSingleFreeplayColor_cvar = GetCvar(Cvars::use_single_freeplay_color);
+			auto useRGBFreeplayColors_cvar = GetCvar(Cvars::use_rgb_freeplay_colors);
 			if (!useSingleFreeplayColor_cvar || !useRGBFreeplayColors_cvar) return;
 
 			bool inFreeplay = gameWrapper->IsInFreeplay();
@@ -151,8 +151,8 @@ void StadiumDrip::changed_useSingleFreeplayColor(std::string cvarName, CVarWrapp
 
 		if (!gameWrapper->IsInFreeplay()) return;
 
-		auto useCustomTeamColors_cvar =	GetCvar(Cvars::useCustomTeamColors);
-		auto useRGBFreeplayColors_cvar = GetCvar(Cvars::useRGBFreeplayColors);
+		auto useCustomTeamColors_cvar =	GetCvar(Cvars::use_custom_team_colors);
+		auto useRGBFreeplayColors_cvar = GetCvar(Cvars::use_rgb_freeplay_colors);
 		if (!useCustomTeamColors_cvar || !useRGBFreeplayColors_cvar) return;
 
 		Teams.UpdateTeamFieldColors(nullptr, !useCustomTeamColors_cvar.getBoolValue(), updatedVal, useRGBFreeplayColors_cvar.getBoolValue());
@@ -170,8 +170,8 @@ void StadiumDrip::changed_useRGBFreeplayColors(std::string cvarName, CVarWrapper
 
 		if (!gameWrapper->IsInFreeplay()) return;
 
-		auto useCustomTeamColors_cvar = GetCvar(Cvars::useCustomTeamColors);
-		auto useSingleFreeplayColor_cvar = GetCvar(Cvars::useSingleFreeplayColor);
+		auto useCustomTeamColors_cvar = GetCvar(Cvars::use_custom_team_colors);
+		auto useSingleFreeplayColor_cvar = GetCvar(Cvars::use_single_freeplay_color);
 		if (!useCustomTeamColors_cvar || !useSingleFreeplayColor_cvar) return;
 
 		Teams.UpdateTeamFieldColors(nullptr, !useCustomTeamColors_cvar.getBoolValue(), useSingleFreeplayColor_cvar.getBoolValue(), updatedVal);

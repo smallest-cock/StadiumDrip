@@ -3,7 +3,7 @@
 
 
 
-CVarWrapper StadiumDrip::RegisterCvar_Bool(const Cvars::CvarData& cvar, bool startingValue)
+CVarWrapper StadiumDrip::RegisterCvar_Bool(const CvarData& cvar, bool startingValue)
 {
 	std::string value = startingValue ? "1" : "0";
 
@@ -11,13 +11,13 @@ CVarWrapper StadiumDrip::RegisterCvar_Bool(const Cvars::CvarData& cvar, bool sta
 }
 
 
-CVarWrapper StadiumDrip::RegisterCvar_String(const Cvars::CvarData& cvar, const std::string& startingValue)
+CVarWrapper StadiumDrip::RegisterCvar_String(const CvarData& cvar, const std::string& startingValue)
 {
 	return cvarManager->registerCvar(cvar.name, startingValue, cvar.description);
 }
 
 
-CVarWrapper StadiumDrip::RegisterCvar_Number(const Cvars::CvarData& cvar, float startingValue, bool hasMinMax, float min, float max)
+CVarWrapper StadiumDrip::RegisterCvar_Number(const CvarData& cvar, float startingValue, bool hasMinMax, float min, float max)
 {
 	std::string numberStr = std::to_string(startingValue);
 
@@ -32,19 +32,19 @@ CVarWrapper StadiumDrip::RegisterCvar_Number(const Cvars::CvarData& cvar, float 
 }
 
 
-CVarWrapper StadiumDrip::RegisterCvar_Color(const Cvars::CvarData& cvar, const std::string& startingValue)
+CVarWrapper StadiumDrip::RegisterCvar_Color(const CvarData& cvar, const std::string& startingValue)
 {
 	return cvarManager->registerCvar(cvar.name, startingValue, cvar.description);
 }
 
 
-void StadiumDrip::RegisterCommand(const Cvars::CvarData& cvar, std::function<void(std::vector<std::string>)> callback)
+void StadiumDrip::RegisterCommand(const CvarData& cvar, std::function<void(std::vector<std::string>)> callback)
 {
 	cvarManager->registerNotifier(cvar.name, callback, cvar.description, PERMISSION_ALL);
 }
 
 
-CVarWrapper StadiumDrip::GetCvar(const Cvars::CvarData& cvar)
+CVarWrapper StadiumDrip::GetCvar(const CvarData& cvar)
 {
 	return cvarManager->getCvar(cvar.name);
 }
