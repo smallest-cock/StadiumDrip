@@ -503,13 +503,14 @@ void StadiumDrip::Messages_Tab()
 // main menu tab
 void StadiumDrip::MainMenu_Tab()
 {
-	auto useCustomMainMenuLoc_cvar =	GetCvar(Cvars::use_custom_mm_location);
-	auto mainMenuX_cvar =				GetCvar(Cvars::main_menu_X);
-	auto mainMenuY_cvar =				GetCvar(Cvars::main_menu_Y);
-	auto mainMenuZ_cvar =				GetCvar(Cvars::main_menu_Z);
-	auto customFOV_cvar =				GetCvar(Cvars::custom_fov);
-	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar || !customFOV_cvar || !useCustomMainMenuLoc_cvar) return;
-
+	auto useCustomMainMenuLoc_cvar =			GetCvar(Cvars::use_custom_mm_location);
+	auto mainMenuX_cvar =						GetCvar(Cvars::main_menu_X);
+	auto mainMenuY_cvar =						GetCvar(Cvars::main_menu_Y);
+	auto mainMenuZ_cvar =						GetCvar(Cvars::main_menu_Z);
+	auto customFOV_cvar =						GetCvar(Cvars::custom_fov);
+	auto remember_mm_camera_rotation_cvar =		GetCvar(Cvars::remember_mm_camera_rotation);
+	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar || !customFOV_cvar || !useCustomMainMenuLoc_cvar)
+		return;
 
 	const float mm_location_height = ImGui::GetContentRegionAvail().y * 0.6f;
 
@@ -598,6 +599,16 @@ void StadiumDrip::MainMenu_Tab()
 
 	if (ImGui::BeginChild("customFOV", ImGui::GetContentRegionAvail(), true))
 	{
+		bool remember_mm_camera_rotation = remember_mm_camera_rotation_cvar.getBoolValue();
+		if (ImGui::Checkbox("Remember camera rotation", &remember_mm_camera_rotation))
+		{
+			remember_mm_camera_rotation_cvar.setValue(remember_mm_camera_rotation);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Rotation will only be saved if you use the mouse to rotate... not a controller stick\n\nbecause Psyonix");
+		}
+
 		GUI::Spacing(2);
 
 		int customFOV = customFOV_cvar.getIntValue();

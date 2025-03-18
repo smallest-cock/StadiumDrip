@@ -63,22 +63,36 @@ void StadiumDrip::TickRGB()
 
 void StadiumDrip::ApplyMainMenuCamSettings()
 {
-	// custom FOV
-	auto customFOV_cvar = GetCvar(Cvars::custom_fov);
-	if (!customFOV_cvar) return;
+	auto remember_mm_camera_rotation_cvar =		GetCvar(Cvars::remember_mm_camera_rotation);
+	auto customFOV_cvar =						GetCvar(Cvars::custom_fov);
+	auto useCustomMainMenuLoc_cvar =			GetCvar(Cvars::use_custom_mm_location);
+	auto mainMenuX_cvar =						GetCvar(Cvars::main_menu_X);
+	auto mainMenuY_cvar =						GetCvar(Cvars::main_menu_Y);
+	auto mainMenuZ_cvar =						GetCvar(Cvars::main_menu_Z);
+	if (!remember_mm_camera_rotation_cvar)
+		return;
 
+	// custom FOV
 	Mainmenu.SetCameraFOV(customFOV_cvar.getFloatValue());
 
+	// saved rotation
+	if (remember_mm_camera_rotation_cvar.getBoolValue())
+	{
+		auto mm_cam_rotation_pitch_cvar =	GetCvar(Cvars::mm_cam_rotation_pitch);
+		auto mm_cam_rotation_yaw_cvar =		GetCvar(Cvars::mm_cam_rotation_yaw);
+		//auto mm_cam_rotation_roll_cvar =	GetCvar(Cvars::mm_cam_rotation_roll);
+		if (!mm_cam_rotation_pitch_cvar)
+			return;
+
+		FRotator rot = { mm_cam_rotation_pitch_cvar.getIntValue(), mm_cam_rotation_yaw_cvar.getIntValue(), 420 };
+		Mainmenu.set_camera_rotation(rot);
+	}
+
 	// custom location
-	auto useCustomMainMenuLoc_cvar = GetCvar(Cvars::use_custom_mm_location);
-	if (!useCustomMainMenuLoc_cvar || !useCustomMainMenuLoc_cvar.getBoolValue()) return;
-
-	auto mainMenuX_cvar = GetCvar(Cvars::main_menu_X);
-	auto mainMenuY_cvar = GetCvar(Cvars::main_menu_Y);
-	auto mainMenuZ_cvar = GetCvar(Cvars::main_menu_Z);
-	if (!mainMenuX_cvar || !mainMenuY_cvar || !mainMenuZ_cvar) return;
-
-	Mainmenu.SetLocation({ mainMenuX_cvar.getFloatValue(), mainMenuY_cvar.getFloatValue(), mainMenuZ_cvar.getFloatValue() });
+	if (useCustomMainMenuLoc_cvar.getBoolValue())
+	{
+		Mainmenu.SetLocation({ mainMenuX_cvar.getFloatValue(), mainMenuY_cvar.getFloatValue(), mainMenuZ_cvar.getFloatValue() });
+	}
 }
 
 

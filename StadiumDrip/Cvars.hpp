@@ -26,6 +26,7 @@ namespace Cvars
 	constexpr CvarData enable_motd =					CVAR("enable_motd",						"enable message of the day (rolling footer message)");
 	constexpr CvarData use_single_motd_color =			CVAR("use_single_motd_color",			"use a single color for message of the day");
 	constexpr CvarData use_gradient_motd_color =		CVAR("use_gradient_motd_color",			"use a gradient of colors for message of the day");
+	constexpr CvarData remember_mm_camera_rotation =	CVAR("remember_mm_camera_rotation",		"remember main menu camera rotation");
 
 	// strings
 	constexpr CvarData selected_ad_name =				CVAR("selected_ad_name",				"selected ad texture");
@@ -49,6 +50,9 @@ namespace Cvars
 	constexpr CvarData rgb_speed =						CVAR("rgb_speed",						"RGB color cycle speed");
 	constexpr CvarData motd_font_size =					CVAR("motd_font_size",					"font size for MOTD text");
 	constexpr CvarData mm_bg_index =					CVAR("mainmenu_bg_index",				"Main menu background index");
+	constexpr CvarData mm_cam_rotation_pitch =			CVAR("mm_cam_rotation_pitch",			"Main menu camera pitch");
+	constexpr CvarData mm_cam_rotation_yaw =			CVAR("mm_cam_rotation_yaw",				"Main menu camera yaw");
+	//constexpr CvarData mm_cam_rotation_roll =			CVAR("mm_cam_rotation_roll",			"Main menu camera roll");
 
 	// colors
 	constexpr CvarData blue_team_color =				CVAR("blue_team_field_color",			"blue team field color");

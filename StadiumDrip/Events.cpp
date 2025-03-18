@@ -78,6 +78,10 @@ void StadiumDrip::Event_GFxData_StartMenu_TA_ProgressToMainMenu(ActorWrapper cal
 {
 	auto update_mm_colors = [this](GameWrapper* gw)
 		{
+			RunCommand(Commands::apply_motd, 0.5f);
+
+			ApplyMainMenuCamSettings();
+
 			auto use_custom_team_colors_cvar = GetCvar(Cvars::use_custom_team_colors);
 			if (!use_custom_team_colors_cvar)
 				return;

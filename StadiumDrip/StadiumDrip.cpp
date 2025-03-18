@@ -29,18 +29,19 @@ void StadiumDrip::onLoad()
 	// =================================== CVARS =====================================
 
 	// bools
-	auto useCustomAds_cvar =				RegisterCvar_Bool(Cvars::use_custom_ads,			false);
-	auto useCustomTeamColors_cvar =			RegisterCvar_Bool(Cvars::use_custom_team_colors,	true);
-	auto useSingleFreeplayColor_cvar =		RegisterCvar_Bool(Cvars::use_single_freeplay_color,	false);
-	auto useRGBFreeplayColors_cvar =		RegisterCvar_Bool(Cvars::use_rgb_freeplay_colors,	false);
-	auto useAltReplayMapSwitch_cvar =		RegisterCvar_Bool(Cvars::use_alt_replay_map_switch,	false);
+	auto useCustomAds_cvar =				RegisterCvar_Bool(Cvars::use_custom_ads,				false);
+	auto useCustomTeamColors_cvar =			RegisterCvar_Bool(Cvars::use_custom_team_colors,		true);
+	auto useSingleFreeplayColor_cvar =		RegisterCvar_Bool(Cvars::use_single_freeplay_color,		false);
+	auto useRGBFreeplayColors_cvar =		RegisterCvar_Bool(Cvars::use_rgb_freeplay_colors,		false);
+	auto useAltReplayMapSwitch_cvar =		RegisterCvar_Bool(Cvars::use_alt_replay_map_switch,		false);
 
-	auto useCustomTeamNames_cvar =			RegisterCvar_Bool(Cvars::use_custom_team_names,		true);
-	auto useCustomGameMsgs_cvar =			RegisterCvar_Bool(Cvars::use_custom_game_messages,	true);
-	auto useCustomMainMenuLoc_cvar =		RegisterCvar_Bool(Cvars::use_custom_mm_location,	false);
-	auto enableMotD_cvar =					RegisterCvar_Bool(Cvars::enable_motd,				false);
-	auto useSingleMotdColor_cvar =			RegisterCvar_Bool(Cvars::use_single_motd_color,		true);
-	//auto useGradientMotdColor_cvar =		RegisterCvar_Bool(Cvars::useGradientMotdColor,		false);
+	auto useCustomTeamNames_cvar =			RegisterCvar_Bool(Cvars::use_custom_team_names,			true);
+	auto useCustomGameMsgs_cvar =			RegisterCvar_Bool(Cvars::use_custom_game_messages,		true);
+	auto useCustomMainMenuLoc_cvar =		RegisterCvar_Bool(Cvars::use_custom_mm_location,		false);
+	auto enableMotD_cvar =					RegisterCvar_Bool(Cvars::enable_motd,					false);
+	auto useSingleMotdColor_cvar =			RegisterCvar_Bool(Cvars::use_single_motd_color,			true);
+	//auto useGradientMotdColor_cvar =		RegisterCvar_Bool(Cvars::useGradientMotdColor,			false);
+	auto remember_mm_camera_rotation_cvar =	RegisterCvar_Bool(Cvars::remember_mm_camera_rotation,	true);
 
 	// strings
 	auto selectedAdName_cvar =				RegisterCvar_String(Cvars::selected_ad_name,		"");
@@ -64,6 +65,9 @@ void StadiumDrip::onLoad()
 	auto rgbSpeed_cvar =					RegisterCvar_Number(Cvars::rgb_speed,				0,	true, -14,	9);
 	auto motd_font_size_cvar =				RegisterCvar_Number(Cvars::motd_font_size,			20, true, 1,	300);
 	auto mm_bg_index_cvar =					RegisterCvar_Number(Cvars::mm_bg_index,				26, true, 0,	100);
+	auto mm_cam_rotation_pitch_cvar =		RegisterCvar_Number(Cvars::mm_cam_rotation_pitch,	-700);
+	auto mm_cam_rotation_yaw_cvar =			RegisterCvar_Number(Cvars::mm_cam_rotation_yaw,		0);
+	//auto mm_cam_rotation_roll_cvar =		RegisterCvar_Number(Cvars::mm_cam_rotation_roll,	0);
 
 	// colors
 	auto blueTeamFieldColor_cvar =			RegisterCvar_Color(Cvars::blue_team_color,			"#FF00BC");

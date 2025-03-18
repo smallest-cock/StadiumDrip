@@ -31,6 +31,10 @@ namespace Events
 
 	constexpr const char* MicSetTextureParamValue =						"Function Engine.MaterialInstanceConstant.SetTextureParameterValue";
 
+	constexpr const char* GFxData_MainMenu_TA_RotatePreviewCamera =		"Function TAGame.GFxData_MainMenu_TA.RotatePreviewCamera";
+	constexpr const char* GFxData_MainMenu_TA_OnRotatePreviewFinished =	"Function TAGame.GFxData_MainMenu_TA.OnRotatePreviewFinished";
+
+
 	// could be useful for freeing mem
 	//constexpr const char* MatchDestroyed =					"Function TAGame.GameEvent_TA.Destroyed";
 	//constexpr const char* GameDestroyed =					"Function TAGame.GameEvent_TA.EventDestroyed";
