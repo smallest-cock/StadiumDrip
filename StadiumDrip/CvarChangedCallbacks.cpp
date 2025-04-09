@@ -80,15 +80,16 @@ void StadiumDrip::changed_enableMotD(std::string cvarName, CVarWrapper updatedCv
 	if (updatedVal)
 	{
 		GAME_THREAD_EXECUTE(
-			RunCommand(Commands::apply_motd);
-		);
-	} 
-	else
-	{
-		GAME_THREAD_EXECUTE(
-			Messages.ClearMOTD();
+			Messages.apply_custom_motd();
+			//RunCommand(Commands::apply_motd);
 		);
 	}
+	//else
+	//{
+	//	GAME_THREAD_EXECUTE(
+	//		Messages.ClearMOTD();
+	//	);
+	//}
 
 	DEBUGLOG("{} changed...", cvarName);
 }

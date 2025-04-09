@@ -12,7 +12,17 @@ void StadiumDrip::Event_LoadingScreenStart(std::string eventName)
 
 void StadiumDrip::Event_MenuChanged(std::string eventName)
 {
-	RunCommand(Commands::apply_motd, 0.5f);
+	// ...
+}
+
+void StadiumDrip::Event_GFxData_MainMenu_TA_OnEnteredMainMenu(std::string eventName)
+{
+	LOG("[HOOK] {}", eventName);
+
+	if (gameWrapper->IsInFreeplay())
+		return;
+
+	ApplyMainMenuCamSettings();
 }
 
 
@@ -36,9 +46,10 @@ void StadiumDrip::Event_LoadingScreenEnd(std::string eventName)
 
 void StadiumDrip::Event_EnterMainMenu(std::string eventName)
 {
-	DEBUGLOG("[HOOK] {}", eventName);
-
-	RunCommand(Commands::apply_motd, 0.5f);
+	LOG("[HOOK] {}", eventName);
+	
+	if (gameWrapper->IsInFreeplay())
+		return;
 
 	ApplyMainMenuCamSettings();
 }
@@ -78,8 +89,6 @@ void StadiumDrip::Event_GFxData_StartMenu_TA_ProgressToMainMenu(ActorWrapper cal
 {
 	auto update_mm_colors = [this](GameWrapper* gw)
 		{
-			RunCommand(Commands::apply_motd, 0.5f);
-
 			ApplyMainMenuCamSettings();
 
 			auto use_custom_team_colors_cvar = GetCvar(Cvars::use_custom_team_colors);
@@ -245,20 +254,28 @@ void StadiumDrip::Event_ExitPremiumGarage(ActorWrapper caller, void* params, std
 // overwrite any ad texture changes
 void StadiumDrip::Event_MicSetTextureParamValue(ActorWrapper caller, void* params, std::string eventName)
 {
-	if (Textures.currentlyApplyingTexture) return;
+	return;
 
-	auto useCustomAds_cvar = GetCvar(Cvars::use_custom_ads);
-	if (!useCustomAds_cvar || !useCustomAds_cvar.getBoolValue()) return;
+	if (Textures.currently_applying_tex) return;
+
+	auto use_custom_ads_cvar = GetCvar(Cvars::use_custom_ads);
+	if (!use_custom_ads_cvar || !use_custom_ads_cvar.getBoolValue()) return;
 
 	DEBUGLOG("[MIChook] {}", eventName);
 
-	UMaterialInstanceConstant* mic = reinterpret_cast<UMaterialInstanceConstant*>(caller.memory_address);
+	auto mic = reinterpret_cast<UMaterialInstanceConstant*>(caller.memory_address);
 	if (!mic)
 	{
 		LOG("UMaterialInstance* from caller is null");
 		return;
 	}
 
-	Textures.SetTextureOnMIC(mic);
+	LOG("MIC (or MI) name: {}", Instances.get_full_name_no_class(mic));
+
+	UTexture* outTexture = nullptr;
+	if (!mic->GetTextureParameterValue(L"AdTexture", outTexture))	// skip if MIC doesn't have an "AdTexture" param
+		return;
+
+	Textures.get_ad_data_from_mic(mic);
 }
 

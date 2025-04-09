@@ -23,8 +23,8 @@
 
 #pragma comment(lib, "Shlwapi.lib")
 
-#include "nlohmann.hpp"
-#include "SDK/SdkHeaders.hpp"
+#include <json/single_include/nlohmann/json.hpp>
+#include <RLSDK/RLSDK_w_pch_includes/SdkHeaders.hpp>
 
 #include "logging.h"
 

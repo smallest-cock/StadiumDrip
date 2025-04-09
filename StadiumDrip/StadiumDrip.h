@@ -9,13 +9,13 @@
 #include "Macros.hpp"
 #include "Events.hpp"
 #include "Cvars.hpp"
-#include "GuiTools.hpp"
+#include <ModUtils/includes.hpp>
 #include "Components/Includes.hpp"
 
 
-constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
+constexpr auto full_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
+constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
 constexpr auto pretty_plugin_version = "v" stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
-
 
 enum States : uint8_t
 {
@@ -23,6 +23,14 @@ enum States : uint8_t
 	Freeplay =	1,
 	InReplay =	2,
 	InMatch =	3
+};
+
+
+struct PluginUpdateResponse
+{
+	bool out_of_date = false;
+	std::string latest_version;
+	std::string release_url;
 };
 
 
@@ -34,6 +42,9 @@ class StadiumDrip:
 	//Boilerplate
 	void onLoad() override;
 	//void onUnload() override;
+
+
+	std::string h_label;
 
 
 	// cvar helper stuff
@@ -73,7 +84,7 @@ class StadiumDrip:
 	void cmd_applyTeamColors(std::vector<std::string> args);
 	void cmd_applyTeamNames(std::vector<std::string> args);
 	void cmd_showBallTrail(std::vector<std::string> args);
-	void cmd_changeMessageOfTheDay(std::vector<std::string> args);
+	void cmd_apply_motd(std::vector<std::string> args);
 	void cmd_checkGameState(std::vector<std::string> args);
 	void cmd_exitToMainMenu(std::vector<std::string> args);
 	void cmd_forfeit(std::vector<std::string> args);
@@ -101,6 +112,7 @@ class StadiumDrip:
 	void Event_LoadingScreenStart(std::string eventName);
 	void Event_LoadingScreenEnd(std::string eventName);
 	void Event_EnterMainMenu(std::string eventName);
+	void Event_GFxData_MainMenu_TA_OnEnteredMainMenu(std::string eventName);
 	void Event_MenuChanged(std::string eventName);
 	void Event_RenderColorArray(std::string eventName);
 	void Event_MainMenuSwitch(std::string eventName);
@@ -126,7 +138,7 @@ public:
 	// GUI
 	void RenderSettings() override;
 	void RenderWindow() override;
-	void AdTexturesDropdown();
+	void AdTexturesDropdown(CVarWrapper& cvar);
 	void MainMenuBackgroundsDropdown();
 	void ReplayMapsDropdown();
 	void Teams_Tab();
@@ -134,6 +146,7 @@ public:
 	void Messages_Tab();
 	void MainMenu_Tab();
 	void Replays_Tab();
+	void Misc_Tab();
 
 	// general width & spacing
 	float itemWidth = 200;

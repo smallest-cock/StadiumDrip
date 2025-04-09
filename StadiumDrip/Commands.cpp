@@ -5,10 +5,14 @@
 
 void StadiumDrip::cmd_applyAdTexture(std::vector<std::string> args)
 {
-	auto useCustomAds_cvar = GetCvar(Cvars::use_custom_ads);
-	if (!useCustomAds_cvar || !useCustomAds_cvar.getBoolValue()) return;
+	auto use_custom_ads_cvar =			GetCvar(Cvars::use_custom_ads);
+	auto use_single_ad_image_cvar =		GetCvar(Cvars::use_single_ad_image);
+	if (!use_custom_ads_cvar || !use_custom_ads_cvar.getBoolValue()) return;
 
-	Textures.ApplySelectedAdTexture();
+	if (use_single_ad_image_cvar.getBoolValue())
+		Textures.apply_selected_ad_tex_to_all_ads();
+	else
+		Textures.apply_ads_to_specific_locations();
 }
 
 
@@ -32,38 +36,13 @@ void StadiumDrip::cmd_change_mainmenu_bg(std::vector<std::string> args)
 }
 
 
-void StadiumDrip::cmd_changeMessageOfTheDay(std::vector<std::string> args)
+void StadiumDrip::cmd_apply_motd(std::vector<std::string> args)
 {
-	auto enableMotD_cvar = GetCvar(Cvars::enable_motd);
-	if (!enableMotD_cvar || !enableMotD_cvar.getBoolValue()) return;
+	auto enable_motd_cvar = GetCvar(Cvars::enable_motd);
+	if (!enable_motd_cvar || !enable_motd_cvar.getBoolValue())
+		return;
 
-	auto motd_cvar = GetCvar(Cvars::motd);
-	if (!motd_cvar) return;
-
-	const std::string rawText = Format::UnescapeQuotesHTML(motd_cvar.getStringValue());
-	std::string modifiedText = rawText;
-
-	auto useSingleMotdColor_cvar =		GetCvar(Cvars::use_single_motd_color);
-	//auto useGradientMotdColor_cvar =	GetCvar(Cvars::useGradientMotdColor);
-	
-	if (useSingleMotdColor_cvar.getBoolValue())
-	{
-		auto motd_font_size_cvar =	GetCvar(Cvars::motd_font_size);
-		auto motdSingleColor_cvar = GetCvar(Cvars::motd_single_color);
-
-		const int font_size = motd_font_size_cvar.getIntValue();
-		const std::string hexColor = Format::LinearColorToHex(motdSingleColor_cvar.getColorValue());
-		modifiedText = "<font size=\"" + std::to_string(font_size) + "\" color=\"" + hexColor + "\">" + rawText + "</font>";
-	}
-	//else if (useGradientMotdColor_cvar.getBoolValue())
-	//{
-	//	auto motdGradientColorBegin_cvar =	GetCvar(Cvars::motdGradientColorBegin);
-	//	auto motdGradientColorEnd_cvar =	GetCvar(Cvars::motdGradientColorEnd);
-	//	
-	//	// TODO: add color gradient stuff
-	//}
-
-	Messages.ChangeMOTD(modifiedText, true);
+	Messages.apply_custom_motd();
 }
 
 
@@ -153,6 +132,11 @@ void StadiumDrip::cmd_test2(std::vector<std::string> args)
 
 void StadiumDrip::cmd_test3(std::vector<std::string> args)
 {
-	// ...
+	auto world_info = AWorldInfo::GetWorldInfo();
+	if (!world_info)
+		return;
+
+	std::string map = world_info->GetMapName(true).ToString();
+	LOG("GetMapName output: {}", map);
 }
 

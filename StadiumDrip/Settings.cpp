@@ -9,7 +9,7 @@ void StadiumDrip::RenderSettings()
 
 	if (ImGui::BeginChild("PluginSettingsSection", ImVec2(0, content_height)))
 	{
-		GUI::alt_settings_header("Plugin made by S S L o w", pretty_plugin_version);
+		GUI::alt_settings_header(h_label.c_str(), pretty_plugin_version);
 
 		GUI::Spacing(4);
 
@@ -68,6 +68,32 @@ void StadiumDrip::RenderWindow()
 	{
 		Replays_Tab();
 		ImGui::EndTabItem();
+	}
+
+	if (ImGui::BeginTabItem("Misc"))
+	{
+		Misc_Tab();
+		ImGui::EndTabItem();
+	}
+}
+
+
+void StadiumDrip::Misc_Tab()
+{
+	auto unlock_all_menu_nodes_cvar = GetCvar(Cvars::unlock_all_menu_nodes);
+	if (!unlock_all_menu_nodes_cvar)
+		return;
+
+	GUI::Spacing(4);
+
+	bool unlock_all_menu_nodes = unlock_all_menu_nodes_cvar.getBoolValue();
+	if (ImGui::Checkbox("Unlock all menu nodes", &unlock_all_menu_nodes))
+	{
+		unlock_all_menu_nodes_cvar.setValue(unlock_all_menu_nodes);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Enables all menu options in freeplay. Like creating a private match, joining tournaments, etc.");
 	}
 }
 
@@ -256,21 +282,58 @@ void StadiumDrip::Teams_Tab()
 // ads tab
 void StadiumDrip::Ads_Tab()
 {
-	auto useCustomAds_cvar = GetCvar(Cvars::use_custom_ads);
-	if (!useCustomAds_cvar) return;
+	auto use_custom_ads_cvar =		GetCvar(Cvars::use_custom_ads);
+	auto use_single_ad_image_cvar = GetCvar(Cvars::use_single_ad_image);
+	auto block_promo_ads_cvar =		GetCvar(Cvars::block_promo_ads);
+	if (!use_custom_ads_cvar || !use_single_ad_image_cvar)
+		return;
 
 	GUI::Spacing(4);
 
-	// enable custom ads checkbox
-	bool useCustomAds = useCustomAds_cvar.getBoolValue();
-	if (ImGui::Checkbox("custom ads", &useCustomAds))
-		useCustomAds_cvar.setValue(useCustomAds);
+	bool block_promo_ads = block_promo_ads_cvar.getBoolValue();
+	if (ImGui::Checkbox("Block promotional ads", &block_promo_ads))
+		block_promo_ads_cvar.setValue(block_promo_ads);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("If unchecked, RL promo ads will interfere with custom ads in certain locations. Idk why that would be desirable, but the option exists...");
 
-	if (useCustomAds)
+	bool use_custom_ads = use_custom_ads_cvar.getBoolValue();
+	if (ImGui::Checkbox("Use custom ads", &use_custom_ads))
+		use_custom_ads_cvar.setValue(use_custom_ads);
+
+	if (use_custom_ads)
 	{
-		GUI::Spacing(8);
+		GUI::SameLineSpacing_relative(100);
 
-		AdTexturesDropdown();
+		// open AdTextures button
+		if (ImGui::Button("Open AdTextures folder"))
+			Files::OpenFolder(Textures.ad_textures_folder);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Images must be in 32-bit PNG format");
+	}
+	else
+		return;
+
+	GUI::Spacing(2);
+
+	bool use_single_ad_image = use_single_ad_image_cvar.getBoolValue();
+	if (ImGui::Checkbox("Use single image for all ad locations", &use_single_ad_image))
+		use_single_ad_image_cvar.setValue(use_single_ad_image);
+
+	GUI::Spacing(4);
+
+	if (ImGui::Button("Apply"))
+	{
+		GAME_THREAD_EXECUTE(
+			RunCommand(Commands::apply_ad_texture);
+		);
+	}
+
+	GUI::Spacing(4);
+
+	if (use_single_ad_image)
+	{
+		auto selected_ad_name_cvar = GetCvar(Cvars::selected_ad_name);
+		AdTexturesDropdown(selected_ad_name_cvar);
 
 		ImGui::SameLine();
 
@@ -278,18 +341,36 @@ void StadiumDrip::Ads_Tab()
 		if (ImGui::Button("Refresh"))
 		{
 			GAME_THREAD_EXECUTE(
-				Textures.ParseAdTextures();
+				Textures.find_available_ad_imgs();
 			);
 		}
+	}
+	else
+	{
+		auto it = Textures.map_ad_mic_data.find(Textures.current_map_name);
+		if (it != Textures.map_ad_mic_data.end())
+		{
+			auto& mic_map = it->second;
 
-		GUI::Spacing(2);
+			for (auto& [mic_name, mic_data] : mic_map)
+			{
+				ImGui::PushID(&mic_data);
 
-		// open AdTextures button
-		if (ImGui::Button("Open AdTextures folder"))
-			Files::OpenFolder(Textures.adTexturesFolder);
+				mic_data.display(mic_name, gameWrapper);
 
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Images must be PNG format");
+				ImGui::PopID();
+			}
+		}
+		
+		GUI::Spacing(4);
+		
+		if (ImGui::CollapsingHeader("debug info"))
+		{
+			// testing
+			ImGui::Text("onload_json_data size: %i", Textures.onload_json_data.size());
+			ImGui::Text("map_ad_mic_data size: %i", Textures.map_ad_mic_data.size());
+			ImGui::Text("ad_img_options_map size: %i", Textures.ad_img_options_map.size());
+		}
 	}
 }
 
@@ -297,26 +378,28 @@ void StadiumDrip::Ads_Tab()
 // messages tab
 void StadiumDrip::Messages_Tab()
 {
-	auto enableMotD_cvar =					GetCvar(Cvars::enable_motd);
+	auto enable_motd_cvar =					GetCvar(Cvars::enable_motd);
 	auto motd_cvar =						GetCvar(Cvars::motd);
-	auto useSingleMotdColor_cvar =			GetCvar(Cvars::use_single_motd_color);
-	auto motdSingleColor_cvar =				GetCvar(Cvars::motd_single_color);
+	auto raw_html_motd_cvar =				GetCvar(Cvars::raw_html_motd);
+	auto use_single_motd_color_cvar =		GetCvar(Cvars::use_single_motd_color);
+	auto motd_single_color_cvar =			GetCvar(Cvars::motd_single_color);
 	auto motd_font_size_cvar =				GetCvar(Cvars::motd_font_size);
-	//auto useGradientMotdColor_cvar =		GetCvar(Cvars::useGradientMotdColor);
-	//auto motdGradientColorBegin_cvar =		GetCvar(Cvars::motdGradientColorBegin);
-	//auto motdGradientColorEnd_cvar =		GetCvar(Cvars::motdGradientColorEnd);
-	if (!enableMotD_cvar || !motd_cvar || !useSingleMotdColor_cvar) return;
+	auto use_gradient_motd_color_cvar =		GetCvar(Cvars::use_gradient_motd_color);
+	auto motd_gradient_color_begin_cvar =	GetCvar(Cvars::motd_gradient_color_begin);
+	auto motd_gradient_color_end_cvar =		GetCvar(Cvars::motd_gradient_color_end);
+	if (!enable_motd_cvar || !motd_cvar || !use_single_motd_color_cvar)
+		return;
 
-	auto useCustomGameMsgs_cvar =       GetCvar(Cvars::use_custom_game_messages);
-	auto countdownMsg3_cvar =           GetCvar(Cvars::countdown_msg_3);
-	auto countdownMsg2_cvar =           GetCvar(Cvars::countdown_msg_2);
-	auto countdownMsg1_cvar =           GetCvar(Cvars::countdown_msg_1);
-	auto goMessage_cvar =               GetCvar(Cvars::go_message);
-	auto userScoredMessage_cvar =       GetCvar(Cvars::user_scored_msg);
-	auto teammateScoredMessage_cvar =   GetCvar(Cvars::teammate_scored_msg);
-	auto oppScoredMessage_cvar =        GetCvar(Cvars::opponent_scored_msg);
-	if (!useCustomGameMsgs_cvar || !countdownMsg3_cvar || !countdownMsg2_cvar || !countdownMsg1_cvar || !goMessage_cvar
-		|| !teammateScoredMessage_cvar || !oppScoredMessage_cvar || !userScoredMessage_cvar) return;
+	auto use_custom_game_messages_cvar =	GetCvar(Cvars::use_custom_game_messages);
+	auto countdown_msg_3_cvar =				GetCvar(Cvars::countdown_msg_3);
+	auto countdown_msg_2_cvar =				GetCvar(Cvars::countdown_msg_2);
+	auto countdown_msg_1_cvar =				GetCvar(Cvars::countdown_msg_1);
+	auto go_message_cvar =					GetCvar(Cvars::go_message);
+	auto user_scored_msg_cvar =				GetCvar(Cvars::user_scored_msg);
+	auto teammate_scored_msg_cvar =			GetCvar(Cvars::teammate_scored_msg);
+	auto opponent_scored_msg_cvar =			GetCvar(Cvars::opponent_scored_msg);
+	if (!use_custom_game_messages_cvar || !countdown_msg_3_cvar || !countdown_msg_2_cvar)
+		return;
 
 
 	const float motd_height = ImGui::GetContentRegionAvail().y * 0.5f;
@@ -326,16 +409,16 @@ void StadiumDrip::Messages_Tab()
 		GUI::Spacing(2);
 
 		// enable custom team names checkbox
-		bool enableMotD = enableMotD_cvar.getBoolValue();
+		bool enableMotD = enable_motd_cvar.getBoolValue();
 		if (ImGui::Checkbox("Custom message of the day (MOTD)", &enableMotD))
-			enableMotD_cvar.setValue(enableMotD);
+			enable_motd_cvar.setValue(enableMotD);
 
 		if (enableMotD)
 		{
 			GUI::Spacing(2);
 
-			bool useSingleMotdColor = useSingleMotdColor_cvar.getBoolValue();
-			//bool useGradientMotdColor = useGradientMotdColor_cvar.getBoolValue();
+			bool useSingleMotdColor = use_single_motd_color_cvar.getBoolValue();
+			bool use_gradient_motd_color = use_gradient_motd_color_cvar.getBoolValue();
 			
 			int radioState = 0;
 
@@ -343,19 +426,20 @@ void StadiumDrip::Messages_Tab()
 			{
 				radioState = 1;
 			}
-			//else if (useGradientMotdColor)
-			//{
-			//	radioState = 2;
-			//}
-
-			if (ImGui::RadioButton("custom text/html", &radioState, 0))
+			else if (use_gradient_motd_color)
 			{
-				useSingleMotdColor_cvar.setValue(false);
-				//useGradientMotdColor_cvar.setValue(false);
+				radioState = 2;
+			}
+
+			if (ImGui::RadioButton("custom HTML", &radioState, 0))
+			{
+				use_single_motd_color_cvar.setValue(false);
+				use_gradient_motd_color_cvar.setValue(false);
 			}
 			if (ImGui::IsItemHovered())
 			{
-				constexpr const char* tooltip =	"Customize text appearance using the <font> HTML tag:\n\n\t\t<font size=\"25\" color=\"#FF0000\">Big red text</font>" \
+				constexpr const char* tooltip =	"Put regular text or use HTML tags to customize the appearance:\n\n"
+												"\t\t<font size=\"25\" color=\"#FF0000\">Big red text</font>"
 												"\n\nYou can even wrap individual characters in a <font> tag to make colorful designs";
 
 				ImGui::SetTooltip(tooltip);
@@ -363,41 +447,51 @@ void StadiumDrip::Messages_Tab()
 
 			if (ImGui::RadioButton("colored text", &radioState, 1))
 			{
-				useSingleMotdColor_cvar.setValue(true);
-				//useGradientMotdColor_cvar.setValue(false);
+				use_single_motd_color_cvar.setValue(true);
+				use_gradient_motd_color_cvar.setValue(false);
 			}
-			//if (ImGui::RadioButton("gradient color text", &radioState, 2))
-			//{
-			//	useSingleMotdColor_cvar.setValue(false);
-			//	useGradientMotdColor_cvar.setValue(true);
-			//}
+			if (ImGui::RadioButton("gradient color text", &radioState, 2))
+			{
+				use_single_motd_color_cvar.setValue(false);
+				use_gradient_motd_color_cvar.setValue(true);
+			}
 
 			GUI::Spacing(2);
 
-			// custom blue team name
-			std::string motd = Format::UnescapeQuotesHTML(motd_cvar.getStringValue());
+			std::string motd = Format::UnescapeQuotesHTML(radioState == 0 ? raw_html_motd_cvar.getStringValue() : motd_cvar.getStringValue());
 			if (ImGui::InputText("message", &motd))
-				motd_cvar.setValue(Format::EscapeQuotesHTML(motd));
+			{
+				switch (radioState)
+				{
+				case 0:
+					raw_html_motd_cvar.setValue(Format::EscapeQuotesHTML(motd));
+					break;
+				default:
+					motd_cvar.setValue(Format::EscapeQuotesHTML(motd));
+					break;
+				}
+			}
 
 			GUI::SameLineSpacing_relative(10.0f);
 
 			if (ImGui::Button("Apply"))
 			{
 				GAME_THREAD_EXECUTE(
-					RunCommand(Commands::apply_motd);
+					Messages.calculate_motd_text();
+					Messages.apply_custom_motd();
 				);
 			}
 
 			if (useSingleMotdColor)
 			{
 				// color picker
-				LinearColor motdSingleColor = motdSingleColor_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+				LinearColor motdSingleColor = motd_single_color_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
 				if (ImGui::ColorEdit3("color##motdSingleColor", &motdSingleColor.R, ImGuiColorEditFlags_NoInputs))
 				{
-					motdSingleColor_cvar.setValue(motdSingleColor * 255);
+					motd_single_color_cvar.setValue(motdSingleColor * 255);
 				}
 
-				GUI::SameLineSpacing_relative(50);
+				GUI::SameLineSpacing_absolute(150);
 				ImGui::SetNextItemWidth(100);
 
 				int motd_font_size = motd_font_size_cvar.getIntValue();
@@ -406,20 +500,30 @@ void StadiumDrip::Messages_Tab()
 					motd_font_size_cvar.setValue(motd_font_size);
 				}
 			}
-			//else if (useGradientMotdColor)
-			//{
-			//	// 2 color pickers
-			//	LinearColor motdGradientColorBegin = motdGradientColorBegin_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
-			//	if (ImGui::ColorEdit3("begin##motdGradientColor", &motdGradientColorBegin.R, ImGuiColorEditFlags_NoInputs))
-			//	{
-			//		motdGradientColorBegin_cvar.setValue(motdGradientColorBegin * 255);
-			//	}
-			//	LinearColor motdGradientColorEnd = motdGradientColorEnd_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
-			//	if (ImGui::ColorEdit3("end##motdGradientColor", &motdGradientColorEnd.R, ImGuiColorEditFlags_NoInputs))
-			//	{
-			//		motdGradientColorEnd_cvar.setValue(motdGradientColorEnd * 255);
-			//	}
-			//}
+			else if (use_gradient_motd_color)
+			{
+				// 2 color pickers
+				LinearColor motd_gradient_color_begin = motd_gradient_color_begin_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+				if (ImGui::ColorEdit3("start##motdGradientColor", &motd_gradient_color_begin.R, ImGuiColorEditFlags_NoInputs))
+				{
+					motd_gradient_color_begin_cvar.setValue(motd_gradient_color_begin * 255);
+				}
+
+				GUI::SameLineSpacing_absolute(150);
+				ImGui::SetNextItemWidth(100);
+
+				int motd_font_size = motd_font_size_cvar.getIntValue();
+				if (ImGui::InputInt("font size", &motd_font_size))
+				{
+					motd_font_size_cvar.setValue(motd_font_size);
+				}
+
+				LinearColor motd_gradient_color_end = motd_gradient_color_end_cvar.getColorValue() / 255;	// converts from 0-255 color to 0.0-1.0 color
+				if (ImGui::ColorEdit3("end##motdGradientColor", &motd_gradient_color_end.R, ImGuiColorEditFlags_NoInputs))
+				{
+					motd_gradient_color_end_cvar.setValue(motd_gradient_color_end * 255);
+				}
+			}
 		}
 	}
 	ImGui::EndChild();
@@ -427,9 +531,9 @@ void StadiumDrip::Messages_Tab()
 	if (ImGui::BeginChild("gameMessages", ImGui::GetContentRegionAvail(), true))
 	{
 		// enable custom team names checkbox
-		bool useCustomGameMsgs = useCustomGameMsgs_cvar.getBoolValue();
+		bool useCustomGameMsgs = use_custom_game_messages_cvar.getBoolValue();
 		if (ImGui::Checkbox("Custom game messages", &useCustomGameMsgs))
-			useCustomGameMsgs_cvar.setValue(useCustomGameMsgs);
+			use_custom_game_messages_cvar.setValue(useCustomGameMsgs);
 
 		if (useCustomGameMsgs)
 		{
@@ -439,27 +543,27 @@ void StadiumDrip::Messages_Tab()
 			{
 				GUI::Spacing(2);
 
-				std::string countdownMsg3 = countdownMsg3_cvar.getStringValue();
+				std::string countdownMsg3 = countdown_msg_3_cvar.getStringValue();
 				if (ImGui::InputText("3", &countdownMsg3))
-					countdownMsg3_cvar.setValue(countdownMsg3);
+					countdown_msg_3_cvar.setValue(countdownMsg3);
 
 				GUI::Spacing();
 
-				std::string countdownMsg2 = countdownMsg2_cvar.getStringValue();
+				std::string countdownMsg2 = countdown_msg_2_cvar.getStringValue();
 				if (ImGui::InputText("2", &countdownMsg2))
-					countdownMsg2_cvar.setValue(countdownMsg2);
+					countdown_msg_2_cvar.setValue(countdownMsg2);
 
 				GUI::Spacing();
 
-				std::string countdownMsg1 = countdownMsg1_cvar.getStringValue();
+				std::string countdownMsg1 = countdown_msg_1_cvar.getStringValue();
 				if (ImGui::InputText("1", &countdownMsg1))
-					countdownMsg1_cvar.setValue(countdownMsg1);
+					countdown_msg_1_cvar.setValue(countdownMsg1);
 
 				GUI::Spacing();
 
-				std::string goMessage = goMessage_cvar.getStringValue();
+				std::string goMessage = go_message_cvar.getStringValue();
 				if (ImGui::InputText("Go!", &goMessage))
-					goMessage_cvar.setValue(goMessage);
+					go_message_cvar.setValue(goMessage);
 			}
 
 			GUI::Spacing(2);
@@ -468,27 +572,27 @@ void StadiumDrip::Messages_Tab()
 			{
 				GUI::Spacing(2);
 
-				std::string userScoredMessage = userScoredMessage_cvar.getStringValue();
+				std::string userScoredMessage = user_scored_msg_cvar.getStringValue();
 				if (ImGui::InputTextWithHint("Me", "i'm a god", &userScoredMessage))
-					userScoredMessage_cvar.setValue(userScoredMessage);
+					user_scored_msg_cvar.setValue(userScoredMessage);
 
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip("TIP: Use {Player} in your message to include the name of the player who scored");
 
 				GUI::Spacing();
 
-				std::string teammateScoredMessage = teammateScoredMessage_cvar.getStringValue();
+				std::string teammateScoredMessage = teammate_scored_msg_cvar.getStringValue();
 				if (ImGui::InputTextWithHint("Teammate", "{Player} just peaked!", &teammateScoredMessage))
-					teammateScoredMessage_cvar.setValue(teammateScoredMessage);
+					teammate_scored_msg_cvar.setValue(teammateScoredMessage);
 
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip("TIP: Use {Player} in your message to include the name of the player who scored");
 
 				GUI::Spacing();
 
-				std::string oppScoredMessage = oppScoredMessage_cvar.getStringValue();
+				std::string oppScoredMessage = opponent_scored_msg_cvar.getStringValue();
 				if (ImGui::InputTextWithHint("Opponent", "{Player} is a tryhard!", &oppScoredMessage))
-					oppScoredMessage_cvar.setValue(oppScoredMessage);
+					opponent_scored_msg_cvar.setValue(oppScoredMessage);
 
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip("TIP: Use {Player} in your message to include the name of the player who scored");
@@ -675,62 +779,58 @@ void StadiumDrip::Replays_Tab()
 }
 
 
-void StadiumDrip::AdTexturesDropdown()
+void StadiumDrip::AdTexturesDropdown(CVarWrapper& cvar_to_update)
 {
-	// cvars
-	auto selectedAdNameCvar = GetCvar(Cvars::selected_ad_name);
-	if (!selectedAdNameCvar) return;
+	if (cvar_to_update.IsNull())
+	{
+		ImGui::TextColored(GUI::Colors::LightRed, "ERROR: Cvar is null");
+		return;
+	}
 
 
-	if (Textures.adImgNames.empty())
+	if (Textures.ad_img_options_map.empty())
 	{
 		ImGui::Text("No PNG images found in AdTextures folder ....");
 		return;
 	}
 
-	char searchBuffer[128] = "";  // Buffer for the search input
-	const char* previewValue = Textures.adImgNames[Textures.selectedAdTextureIndex].c_str();
+	char search_buffer[128] = "";  // Buffer for the search input
+	std::string cvar_val = cvar_to_update.getStringValue();
+	const char* previewValue = cvar_val.c_str();
 
-	if (ImGui::BeginSearchableCombo("ad image##adTextureDropdown", previewValue, searchBuffer, sizeof(searchBuffer), "search..."))
+	if (ImGui::BeginSearchableCombo("ad image##adTextureDropdown", previewValue, search_buffer, sizeof(search_buffer), "search..."))
 	{
-		// convert search text to lower
-		std::string searchQuery = Format::ToLower(searchBuffer);
+		std::string search_str_lower = Format::ToLower(search_buffer);	// convert search text to lower
 
-		for (int i = 0; i < Textures.adImgNames.size(); i++)
+		for (const auto& [filename, img_info] : Textures.ad_img_options_map)
 		{
-			ImGui::PushID(i);
-
-			std::string adTexName = Textures.adImgNames[i];
-
-			// convert title text to lower
-			std::string adTexNameLower = Format::ToLower(adTexName);
+			ImGui::PushID(&img_info);
 
 			// filter results if necessary
-			if (searchBuffer != "")
+			if (!search_str_lower.empty())
 			{
-				if (adTexNameLower.find(searchQuery) != std::string::npos)
+				std::string ad_name_lower = Format::ToLower(img_info.name);	// convert ad name text to lower
+
+				if (ad_name_lower.find(search_str_lower) == std::string::npos)
 				{
-					if (ImGui::Selectable(adTexName.c_str(), Textures.selectedAdTextureIndex == i))
-					{
-						Textures.selectedAdTextureIndex = i;
+					ImGui::PopID();
+					continue;
+				}
 
-						// update cvar string value
-						selectedAdNameCvar.setValue(adTexName);
+				if (ImGui::Selectable(img_info.name.c_str(), img_info.name == cvar_val))
+				{
+					cvar_to_update.setValue(img_info.name);	// update cvar string value
 
-						GAME_THREAD_EXECUTE(
-							RunCommand(Commands::apply_ad_texture);
-						);
-					}
+					GAME_THREAD_EXECUTE(
+						RunCommand(Commands::apply_ad_texture);
+					);
 				}
 			}
 			else
 			{
-				if (ImGui::Selectable(adTexName.c_str(), Textures.selectedAdTextureIndex == i))
+				if (ImGui::Selectable(img_info.name.c_str(), img_info.name == cvar_val))
 				{
-					Textures.selectedAdTextureIndex = i;
-
-					// update cvar string value
-					selectedAdNameCvar.setValue(adTexName);
+					cvar_to_update.setValue(img_info.name);	// update cvar string value
 
 					GAME_THREAD_EXECUTE(
 						RunCommand(Commands::apply_ad_texture);
