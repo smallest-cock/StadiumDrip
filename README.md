@@ -14,18 +14,20 @@ deadass
 https://youtu.be/91Uc_UaLiwY
 
 ## ✨ Features
-- Change stadium colors in matches and freeplay
+- Customize stadium colors in matches and freeplay
   - Option to use RGB effect or a single field color in freeplay
-- Set custom team names
-- Set custom goal scored messages
+- Customize stadium ads
+- Customize team names
+- Customize goal scored messages
   - Can be customized based on *who* scored (you/teammate/opponent)
-- Set custom kickoff countdown messages
-- Set custom rolling footer message at the bottom of menu screens
-- Change your car location in main menu
+- Customize kickoff countdown messages
+- Customize the rolling message at the bottom of menu screens (Message of the Day)
+- Unlock all menu options in freeplay
+  - Create private matches, LAN matches, join tournaments, etc.
+- Change your car's location in main menu
 - Change your FOV angle in main menu
 - Change the main menu background map
-- Replace stadium ads with a custom image
-- Change the map when viewing a replay
+- Customize the map when viewing a replay
   - Great for recording clips
 
 
