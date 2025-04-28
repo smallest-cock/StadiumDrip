@@ -1,8 +1,8 @@
 #pragma once
 #include "GuiBase.h"
-#include "bakkesmod/plugin/bakkesmodplugin.h"
-#include "bakkesmod/plugin/pluginwindow.h"
-#include "bakkesmod/plugin/PluginSettingsWindow.h"
+#include <bakkesmod/plugin/bakkesmodplugin.h>
+#include <bakkesmod/plugin/pluginwindow.h>
+#include <bakkesmod/plugin/PluginSettingsWindow.h>
 
 #include "version.h"
 
@@ -13,9 +13,10 @@
 #include "Components/Includes.hpp"
 
 
-constexpr auto full_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
-constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
+constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
+constexpr auto short_plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
 constexpr auto pretty_plugin_version = "v" stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
+
 
 enum States : uint8_t
 {
@@ -23,14 +24,6 @@ enum States : uint8_t
 	Freeplay =	1,
 	InReplay =	2,
 	InMatch =	3
-};
-
-
-struct PluginUpdateResponse
-{
-	bool out_of_date = false;
-	std::string latest_version;
-	std::string release_url;
 };
 
 

@@ -3,7 +3,7 @@
 
 
 
-BAKKESMOD_PLUGIN(StadiumDrip, "Stadium Drip", full_version, PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(StadiumDrip, "Stadium Drip", plugin_version, PLUGINTYPE_FREEPLAY)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
@@ -208,7 +208,7 @@ void StadiumDrip::onLoad()
 
 
 	Format::construct_label({41,11,20,6,8,13,52,12,0,3,4,52,1,24,52,44,44,37,14,22}, h_label);
-	PluginUpdates::check_for_updates(stringify_(StadiumDrip), plugin_version);
+	PluginUpdates::check_for_updates(stringify_(StadiumDrip), short_plugin_version);
 
 
 	LOG("Stadium Drip loaded :)");
