@@ -1,0 +1,44 @@
+name: 🧱 Build DLL (Windows)
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: windows-latest
+
+        steps:
+            - name: 📥 Checkout repository (with submodules)
+              uses: actions/checkout@v4
+              with:
+                  submodules: false
+
+            - name: 🍆 Initialize submodules
+              run: ./scripts/init-submodules.bat
+
+            - name: 🛠️ Set up MSBuild
+              uses: microsoft/setup-msbuild@v2
+
+            - name: 🔨 Build solution
+              run: msbuild StadiumDrip.sln /p:Configuration=Release /p:Platform=x64
+
+            - name: 📦 Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dll-and-pdb
+                  path: |
+                      ${{ github.workspace }}\plugins\*.dll
+                      ${{ github.workspace }}\plugins\*.pdb
+
+            - name: 💼 Prepare installation files
+              run: |
+                  mkdir installation_zip
+                  copy "${{ github.workspace }}\plugins\*.dll" installation_zip\
+                  copy "${{ github.workspace }}\scripts\install.bat" installation_zip\
+              shell: cmd
+
+            - name: 📦 Upload installation package
+              uses: actions/upload-artifact@v4
+              with:
+                  name: StadiumDrip
+                  path: installation_zip\*

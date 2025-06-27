@@ -6,9 +6,8 @@ peep the stadium drip my guy 👀
 deadass
 
 ## 🎥 Video Tutorial
-
 <a href='https://youtu.be/91Uc_UaLiwY'>
-  <img src='./docs/images/plugin-screenshot-better-color.png' alt="showcase video" width="600"/>
+  <img src='./assets/images/plugin_screenshot.png' alt="showcase video" width="600"/>
 </a>
 
 https://youtu.be/91Uc_UaLiwY
@@ -41,15 +40,25 @@ Find the latest version in [Releases](https://github.com/smallest-cock/StadiumDr
 <br>
 
 ## 💻 Commands
-
 | Command | Description |
-|---|---|
+|---------|:-----------:|
 `sd_apply_ad_texture` | apply selected ad texture to stadium
 `sd_apply_team_names` | apply custom team names
 `sd_apply_motd` | apply custom rolling footer message at the bottom of menu screens
 `sd_show_ball_trail` | show the ball trail effect at all times
 `sd_exit_to_main_menu` | exit to the main menu
 `sd_forfeit` | forfeit the current match
+
+## 🛠️ Building
+After cloning the repo, make sure to initialize the submodules before attempting to build the .sln:
+
+Run `./scripts/init-submodules.bat` (or `./scripts/init-submodules.sh` for bash) to initialize the submodules in an optimal way
+
+<details> <summary>🔍 Why this instead of <code>git submodule update --init --recursive</code> ?</summary>
+<li>Avoids downloading 200MB of history for the <strong>nlohmann/json</strong> library</li>
+<li>Allows Git to detect updates for the other submodules</li>
+</details>
+
 
 ## ❤️ Support
 

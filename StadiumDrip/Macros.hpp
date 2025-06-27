@@ -1,10 +1,7 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-
-// convenient macros to avoid repetive typing  (should only be used within main plugin class)
-// ... 'args' param comes last to support multiple variables in capture list
-
+// "args" param comes last to support multiple variables in capture list
 
 #define DELAY(delaySeconds, code) \
 	gameWrapper->SetTimeout([this](GameWrapper* gw) { \
@@ -63,7 +60,5 @@
 			code \
 		}).detach(); \
 	} while (0)
-
-
 
 #endif

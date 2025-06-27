@@ -14,7 +14,7 @@ struct CvarData
 namespace Cvars
 {
 	// bools
-	constexpr CvarData use_custom_ads =					CVAR("use_custom_ads",					"use custom ad textures");
+	constexpr CvarData useCustomAds =					CVAR("use_custom_ads",					"use custom ad textures");
 	constexpr CvarData use_custom_team_colors =			CVAR("use_custom_team_colors",			"use custom team colors");
 	constexpr CvarData use_single_freeplay_color =		CVAR("use_single_freeplay_color",		"use a single freeplay color instead of custom team colors");
 	constexpr CvarData use_rgb_freeplay_colors =		CVAR("use_rgb_freeplay_colors",			"use RGB stadium colors in freeplay");
@@ -27,12 +27,12 @@ namespace Cvars
 	constexpr CvarData use_single_motd_color =			CVAR("use_single_motd_color",			"use a single color for message of the day");
 	constexpr CvarData use_gradient_motd_color =		CVAR("use_gradient_motd_color",			"use a gradient of colors for message of the day");
 	constexpr CvarData remember_mm_camera_rotation =	CVAR("remember_mm_camera_rotation",		"remember main menu camera rotation");
-	constexpr CvarData use_single_ad_image =			CVAR("use_single_ad_image",				"use single ad image for all ad locations");
-	constexpr CvarData block_promo_ads =				CVAR("block_promo_ads",					"block RL promo ads that override default ads");
+	constexpr CvarData useSingleAdImage =				CVAR("use_single_ad_image",				"use single ad image for all ad locations");
+	constexpr CvarData blockPromoAds =					CVAR("block_promo_ads",					"block RL promo ads that override default ads");
 	constexpr CvarData unlock_all_menu_nodes =			CVAR("unlock_all_menu_nodes",			"Unlock all menu options in UI");
 
 	// strings
-	constexpr CvarData selected_ad_name =				CVAR("selected_ad_name",				"selected ad texture");
+	constexpr CvarData selectedAdName =					CVAR("selected_ad_name",				"selected ad texture");
 	constexpr CvarData blue_team_name =					CVAR("blue_team_name",					"custom blue team name");
 	constexpr CvarData orange_team_name =				CVAR("orange_team_name",				"custom orange team name");
 	constexpr CvarData motd =							CVAR("motd",							"custom message of the day (rolling text in menu footer)");

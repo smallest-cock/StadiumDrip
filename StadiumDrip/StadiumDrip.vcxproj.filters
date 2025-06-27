@@ -75,19 +75,10 @@
     <ClCompile Include="Settings.cpp">
       <Filter>Plugin\src</Filter>
     </ClCompile>
-    <ClCompile Include="Events.cpp">
-      <Filter>Plugin\src</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands.cpp">
-      <Filter>Plugin\src</Filter>
-    </ClCompile>
     <ClCompile Include="Components\Components\Teams.cpp">
       <Filter>Components\Components</Filter>
     </ClCompile>
     <ClCompile Include="RegisterCvars.cpp">
-      <Filter>Plugin\src</Filter>
-    </ClCompile>
-    <ClCompile Include="CvarChangedCallbacks.cpp">
       <Filter>Plugin\src</Filter>
     </ClCompile>
     <ClCompile Include="Components\Components\Messages.cpp">
@@ -180,6 +171,12 @@
     <ClCompile Include="..\external\BakkesmodPluginTemplate\IMGUI\imguivariouscontrols.cpp">
       <Filter>IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\external\RLSDK\RLSDK_w_pch_includes\SDK_HEADERS\Extras.cpp">
+      <Filter>RLSDK\SDK_HEADERS</Filter>
+    </ClCompile>
+    <ClCompile Include="Init.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="version.h">
@@ -196,9 +193,6 @@
     </ClInclude>
     <ClInclude Include="GuiBase.h">
       <Filter>Plugin\header</Filter>
-    </ClInclude>
-    <ClInclude Include="Components\Includes.hpp">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="Components\Components\Instances.hpp">
       <Filter>Components\Components</Filter>
@@ -379,6 +373,15 @@
     </ClInclude>
     <ClInclude Include="..\external\BakkesmodPluginTemplate\IMGUI\imstb_truetype.h">
       <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Components\Component.hpp">
+      <Filter>Components\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\RLSDK\RLSDK_w_pch_includes\SDK_HEADERS\Extras.hpp">
+      <Filter>RLSDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Includes.hpp">
+      <Filter>Components\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
