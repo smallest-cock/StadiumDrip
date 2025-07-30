@@ -188,6 +188,9 @@ void ReplaysComponent::display_mapsDropdown()
 	{
 		const std::string searchQueryLower = Format::ToLower(searchBuffer);
 
+		const std::string_view searchView{searchBuffer};
+		const bool hasSearch = !searchView.empty();
+
 		for (int i = 0; i < m_mapNames.size(); ++i)
 		{
 			GUI::ScopedID id{i};
@@ -196,26 +199,14 @@ void ReplaysComponent::display_mapsDropdown()
 			const auto& mapNameStr         = m_mapNames[i].prettyName;
 			const auto  mapNameStrLower    = Format::ToLower(mapNameStr);
 
-			if (searchBuffer != "") // only render option if there's text in search box & it matches the key name
-			{
-				if (mapNameStrLower.find(searchQueryLower) == std::string::npos)
-					continue;
+			if (hasSearch && mapNameStrLower.find(searchQueryLower) == std::string::npos)
+				continue;
 
-				if (ImGui::Selectable(mapNameStr.c_str(), m_dropdownPreviewIndex == i))
-				{
-					GAME_THREAD_EXECUTE_CAPTURE(
-						changeMap(internalMapNameStr);
-					, internalMapNameStr);
-				}
-			}
-			else // if there's no text in search box, render all possible key options
+			if (ImGui::Selectable(mapNameStr.c_str(), m_dropdownPreviewIndex == i))
 			{
-				if (ImGui::Selectable(mapNameStr.c_str(), m_dropdownPreviewIndex == i))
-				{
-					GAME_THREAD_EXECUTE_CAPTURE(
-						changeMap(internalMapNameStr);
-					, internalMapNameStr);
-				}
+				GAME_THREAD_EXECUTE_CAPTURE(
+					changeMap(internalMapNameStr);
+				, internalMapNameStr);
 			}
 		}
 
