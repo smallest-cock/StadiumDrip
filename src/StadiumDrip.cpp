@@ -12,8 +12,7 @@ void StadiumDrip::onLoad()
 {
 	_globalCvarManager = cvarManager;
 
-	Instances.InitGlobals(); // initialize RLSDK globals
-	if (!Instances.CheckGlobals())
+	if (!Instances.InitGlobals())
 		return;
 
 	pluginInit();
