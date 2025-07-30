@@ -1,5 +1,12 @@
 #include "pch.h"
 #include "StadiumDrip.h"
+#include "Events.hpp"
+#include "Macros.hpp"
+#include "components/Textures.hpp"
+#include "components/Teams.hpp"
+#include "components/Messages.hpp"
+#include "components/MainMenu.hpp"
+#include "components/Replays.hpp"
 
 
 void StadiumDrip::pluginInit()
@@ -28,7 +35,7 @@ void StadiumDrip::initCvars()
 
 void StadiumDrip::initCommands()
 {
-	RegisterCommand(Commands::show_ball_trail, [this](...)
+	registerCommand(Commands::show_ball_trail, [this](...)
 	{
 		auto fxBalls = Instances.GetAllInstancesOf<AFXActor_Ball_TA>();
 		LOG("num found AFXActor_Ball_TA: {}", fxBalls.size());
@@ -44,7 +51,7 @@ void StadiumDrip::initCommands()
 		}
 	});
 
-	RegisterCommand(Commands::exit_to_main_menu, [this](...)
+	registerCommand(Commands::exit_to_main_menu, [this](...)
 	{
 		auto shell = Instances.GetInstanceOf<UGFxShell_X>();
 		if (!validUObject(shell))
@@ -53,7 +60,7 @@ void StadiumDrip::initCommands()
 		shell->ExitToMainMenu();
 	});
 
-	RegisterCommand(Commands::forfeit, [this](...)
+	registerCommand(Commands::forfeit, [this](...)
 	{
 		auto shell = Instances.GetInstanceOf<UGFxShell_TA>();
 		if (!validUObject(shell))
@@ -65,17 +72,17 @@ void StadiumDrip::initCommands()
 	});
 
 	// testing
-	RegisterCommand(Commands::test_1, [this](std::vector<std::string> args)
+	registerCommand(Commands::test_1, [this](std::vector<std::string> args)
 	{
 		LOG("gameWrapper->IsInFreeplay(): {}", gameWrapper->IsInFreeplay());
 	});
 
-	RegisterCommand(Commands::test_2, [this](std::vector<std::string> args)
+	registerCommand(Commands::test_2, [this](std::vector<std::string> args)
 	{
 		Teams.clearOgNames();
 	});
 	
-	RegisterCommand(Commands::test_3, [this](std::vector<std::string> args)
+	registerCommand(Commands::test_3, [this](std::vector<std::string> args)
 	{
 		auto world_info = AWorldInfo::GetWorldInfo();
 		if (!world_info)
@@ -89,7 +96,7 @@ void StadiumDrip::initCommands()
 // hooks used by multiple components... they go here bc i dont think BM supports hooking a function multiple times w different callbacks
 void StadiumDrip::initHooks()
 {
-	HookWithCallerPost(Events::EngineShare_X_EventPreLoadMap, [this](ActorWrapper Caller, void* Params, ...)
+	hookWithCallerPost(Events::EngineShare_X_EventPreLoadMap, [this](ActorWrapper Caller, void* Params, ...)
 	{
 		auto* params = reinterpret_cast<UEngineShare_X_execEventPreLoadMap_Params*>(Params);
 		if (!params)
@@ -100,17 +107,17 @@ void StadiumDrip::initHooks()
 		Teams.clearOgNames();
 	});
 
-	HookEventPost(Events::LoadingScreen_TA_HandlePostLoadMap, [this](...)
+	hookEventPost(Events::LoadingScreen_TA_HandlePostLoadMap, [this](...)
 	{
 		Textures.handleLoadingScreenEnd();
 
-		RunCommandInterval(Commands::apply_ad_texture, 3, 0.3f, true);
+		runCommandInterval(Commands::apply_ad_texture, 3, 0.3f, true);
 		DELAY(2.0f,
 			Replays.storeCurrentMapName();
 		);
 	});
 
-	HookEventPost(Events::GFxData_StartMenu_TA_ProgressToMainMenu,[this](...)
+	hookEventPost(Events::GFxData_StartMenu_TA_ProgressToMainMenu,[this](...)
 	{
 		DELAY(0.2f,
 			Mainmenu.applyCustomCamSettings();

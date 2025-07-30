@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Teams.hpp"
+#include "Macros.hpp"
+#include "Events.hpp"
 
 
 // ##############################################################################################################
@@ -247,7 +249,7 @@ void TeamsComponent::applyRgbColor(AGameEvent_Team_TA* event)
 	auto act = Instances.getSetStadiumTeamColorsSeqAct();
 	if (!act)
 	{
-		LOG("ERROR: Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
+		LOGERROR("Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
 		return;
 	}
 
@@ -261,14 +263,14 @@ void TeamsComponent::applySolidFreeplayColor()
 	AGameEvent_Team_TA* event = Instances.getTeamGameEvent();
 	if (!event)
 	{
-		LOG("ERROR: Unable to get current AGameEvent_Team_TA instance");
+		LOGERROR("Unable to get current AGameEvent_Team_TA instance");
 		return;
 	}
 
 	auto act = Instances.getSetStadiumTeamColorsSeqAct();
 	if (!act)
 	{
-		LOG("ERROR: Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
+		LOGERROR("Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
 		return;
 	}
 
@@ -350,7 +352,7 @@ void TeamsComponent::applyColorsToArchetype(ATeam_TA* team)
 {
 	if (!validUObject(team))
 	{
-		LOG("ERROR: ATeam_TA* is invalid");
+		LOGERROR("ATeam_TA* is invalid");
 		return;
 	}
 
@@ -374,7 +376,7 @@ void TeamsComponent::applyColorsToArchetype(ATeam_TA* team)
 	{
 		if (!m_backedUpOgBlueColor || !m_backedUpOgOrangeColor)
 		{
-			LOG("ERROR: Unable to apply OG colors, they haven't been saved");
+			LOGERROR("Unable to apply OG colors, they haven't been saved");
 			return;
 		}
 
@@ -391,7 +393,7 @@ void TeamsComponent::applyColorsToArchetype(ATeam_TA* team)
 		{
 			if (team->CurrentColorList.size() != ogColors.currentColors.size())
 			{
-				LOG("ERROR: Team CurrentColorList size ({}) doesn't match saved OG currentColors size ({})",
+				LOGERROR("Team CurrentColorList size ({}) doesn't match saved OG currentColors size ({})",
 				    team->CurrentColorList.size(),
 				    ogColors.currentColors.size());
 			}
@@ -422,7 +424,7 @@ void TeamsComponent::backupOgColorsForTeam(const ATeam_TA* team)
 {
 	if (!validUObject(team))
 	{
-		LOG("ERROR: ATeam_TA* is invalid");
+		LOGERROR("ATeam_TA* is invalid");
 		return;
 	}
 
@@ -431,7 +433,7 @@ void TeamsComponent::backupOgColorsForTeam(const ATeam_TA* team)
 
 	if (team->DefaultColorList.size() != COLOR_ARRAY_SIZE)
 	{
-		LOG("ERROR: team->DefaultColorList size ({}) isn't {}", team->DefaultColorList.size(), COLOR_ARRAY_SIZE);
+		LOGERROR("team->DefaultColorList size ({}) isn't {}", team->DefaultColorList.size(), COLOR_ARRAY_SIZE);
 		return;
 	}
 
@@ -511,7 +513,7 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const std::array<FLi
 	// change current colors
 	if (team->CurrentColorList.size() != COLOR_ARRAY_SIZE)
 	{
-		LOG("ERROR: Team's CurrentColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
+		LOGERROR("Team's CurrentColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
 		return;
 	}
 	
@@ -531,14 +533,14 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const std::array<FLi
 	// change default colors
 	if (team->DefaultColorList.size() != COLOR_ARRAY_SIZE)
 	{
-		LOG("ERROR: Team's DefaultColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
+		LOGERROR("Team's DefaultColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
 		return;
 	}
 
 	for (int i = 0; i < team->DefaultColorList.size(); ++i)
 		team->DefaultColorList[i] = colors[i];
 
-	 team->SetDefaultColors(); // updates field colors live
+	team->SetDefaultColors(); // updates field colors live
 
 	if (log)
 		LOG("Called UpdateColors() for team {}", Format::ToHexString(team));
@@ -555,7 +557,7 @@ void TeamsComponent::changeColorLiveOutsideMatch(
 		act = Instances.getSetStadiumTeamColorsSeqAct();
 		if (!act)
 		{
-			LOG("ERROR: Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
+			LOGERROR("Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
 			return;
 		}
 	}
@@ -580,14 +582,14 @@ void TeamsComponent::changeColorLiveOutsideMatch(
 		act = Instances.getSetStadiumTeamColorsSeqAct();
 		if (!act)
 		{
-			LOG("ERROR: Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
+			LOGERROR("Unable to get valid USeqAct_SetStadiumTeamColors_TA instance");
 			return;
 		}
 	}
 
 	if (team->CurrentColorList.size() != COLOR_ARRAY_SIZE)
 	{
-		LOG("ERROR: Team's CurrentColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
+		LOGERROR("Team's CurrentColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
 		return;
 	}
 
@@ -637,7 +639,7 @@ void TeamsComponent::changeNamesFromGameEvent(AGameEvent_Team_TA* gameEvent)
 	UGFxDataStore_X* ds = getDatastore(gameEvent);
 	if (!ds)
 	{
-		LOG("ERROR: Unable to get UGFxDataStore_X instance from game event");
+		LOGERROR("Unable to get UGFxDataStore_X instance from game event");
 		return;
 	}
 

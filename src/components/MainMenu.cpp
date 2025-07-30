@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "MainMenu.hpp"
-
-
+#include "Events.hpp"
+#include "Macros.hpp"
 
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
@@ -285,7 +285,7 @@ void MainMenuComponent::setCameraFOV(float newFOV, bool log)
 	auto* pc = Instances.GetInstanceOf<APlayerController>();
 	if (!validUObject(pc))
 	{
-		LOG("ERROR: APlayerController* is invalid");
+		LOGERROR("APlayerController* is invalid");
 		return;
 	}
 
@@ -340,7 +340,7 @@ EMainMenuBackground MainMenuComponent::getSelectedBackground()
 
 	if (m_selectedBgDropdownIndex >= m_bgDropdownNames.size())
 	{
-		LOG("ERROR: m_selectedBgDropdownIndex ({}) isn't a valid index for m_bgDropdownNames (size {})",
+		LOGERROR("m_selectedBgDropdownIndex ({}) isn't a valid index for m_bgDropdownNames (size {})",
 		    m_selectedBgDropdownIndex,
 		    m_bgDropdownNames.size());
 		return bg;
@@ -350,7 +350,7 @@ EMainMenuBackground MainMenuComponent::getSelectedBackground()
 	auto         it     = m_workingMMBGIds.find(bgName);
 	if (it == m_workingMMBGIds.end())
 	{
-		LOG("ERROR: \"{}\" not a valid key for m_workingMMBGIds", bgName);
+		LOGERROR("\"{}\" not a valid key for m_workingMMBGIds", bgName);
 		return bg;
 	}
 
@@ -369,7 +369,7 @@ void MainMenuComponent::setBackground(EMainMenuBackground backgroundID, bool log
 	auto* config = Instances.GetInstanceOf<UUIConfig_TA>();
 	if (!validUObject(config))
 	{
-		LOG("ERROR: UUIConfig_TA* is null");
+		LOGERROR("UUIConfig_TA* is null");
 		return;
 	}
 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Items.hpp"
+#include "Messages.hpp"
 
 
 // ##############################################################################################################
@@ -38,7 +39,7 @@ void ItemsComponent::findAndStoreCarInfo()
 	auto* productDb = Instances.GetInstanceOf<UProductDatabase_TA>();
 	if (!productDb)
 	{
-		LOG("ERROR: UProductDatabase_TA* is invalid");
+		LOGERROR("UProductDatabase_TA* is invalid");
 		return;
 	}
 
@@ -64,7 +65,7 @@ void ItemsComponent::dumpItems()
 	auto* productDb = Instances.GetInstanceOf<UProductDatabase_TA>();
 	if (!productDb)
 	{
-		LOG("ERROR: UProductDatabase_TA* is invalid");
+		LOGERROR("UProductDatabase_TA* is invalid");
 		return;
 	}
 
@@ -143,21 +144,21 @@ bool ItemsComponent::spawnProductData(FOnlineProductData productData, const std:
 	auto* containerDrops = Instances.GetInstanceOf<UGFxData_ContainerDrops_TA>();
 	if (!containerDrops)
 	{
-		LOG("ERROR: UGFxData_ContainerDrops_TA is invalid");
+		LOGERROR("UGFxData_ContainerDrops_TA is invalid");
 		return false;
 	}
 
 	UOnlineProduct_TA* onlineProduct = containerDrops->CreateTempOnlineProduct(productData);
 	if (!validUObject(onlineProduct))
 	{
-		LOG("ERROR: UOnlineProduct_TA is invalid");
+		LOGERROR("UOnlineProduct_TA is invalid");
 		return false;
 	}
 
 	auto* saveData = Instances.GetInstanceOf<USaveData_TA>();
 	if (!saveData)
 	{
-		LOG("ERROR: USaveData_TA* is invalid");
+		LOGERROR("USaveData_TA* is invalid");
 		return false;
 	}
 

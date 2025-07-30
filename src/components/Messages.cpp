@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Messages.hpp"
+#include "Macros.hpp"
+#include "Events.hpp"
+#include <ModUtils/wrappers/GFxWrapper.hpp>
 
 
 
@@ -77,7 +80,7 @@ void MessagesComponent::initHooks()
 		if (!*m_unlockAllMenuNodes)
 			return;
 
-		auto caller = reinterpret_cast<UGFxData_MenuTreeNode_TA*>(Caller.memory_address);
+		auto* caller = reinterpret_cast<UGFxData_MenuTreeNode_TA*>(Caller.memory_address);
 		if (!validUObject(caller))
 			return;
 
@@ -98,7 +101,7 @@ void MessagesComponent::initHooks()
 		auto caller = reinterpret_cast<APlayerController_TA*>(Caller.memory_address);
 		if (!validUObject(caller))
 		{
-			LOG("ERROR: APlayerController_TA* from caller is invalid");
+			LOGERROR("APlayerController_TA* from caller is invalid");
 			return;
 		}
 
@@ -113,7 +116,7 @@ void MessagesComponent::initHooks()
 		auto caller = reinterpret_cast<AGameEvent_TA*>(Caller.memory_address);
 		if (!validUObject(caller))
 		{
-			LOG("ERROR: AGameEvent_TA* from caller is null");
+			LOGERROR("AGameEvent_TA* from caller is null");
 			return;
 		}
 
@@ -133,7 +136,7 @@ void MessagesComponent::initHooks()
 		auto       ds = startmenu.get_datastore();
 		if (!validUObject(ds))
 		{
-			LOG("ERROR: Datastore instance from startmenu GfxWrapper is invalid");
+			LOGERROR("Datastore instance from startmenu GfxWrapper is invalid");
 			return;
 		}
 
@@ -248,7 +251,7 @@ void MessagesComponent::applyCustomMotd(UGFxData_Community_TA* community, UGFxDa
 		auto community_gfx = Instances.GetInstanceOf<UGFxData_Community_TA>();
 		if (!validUObject(community_gfx))
 		{
-			LOG("ERROR: UGFxData_Community_TA* is invalid");
+			LOGERROR("UGFxData_Community_TA* is invalid");
 			return;
 		}
 
@@ -287,7 +290,7 @@ std::string MessagesComponent::getGradientMotdString(const std::string& text, in
 
 	if (colors.size() != text.length())
 	{
-		LOG("ERROR: Gradient MOTD mismatch. Text string size = {}, Color list size = {}", text.length(), colors.size());
+		LOGERROR("Gradient MOTD mismatch. Text string size = {}, Color list size = {}", text.length(), colors.size());
 		return text;
 	}
 
@@ -340,7 +343,7 @@ void MessagesComponent::setCountdownMessages(AGameEvent_TA* gameEvent, const std
 	UMessage_TA* goMsg = gameEvent->GoMessage;
 	if (!validUObject(goMsg))
 	{
-		LOG("ERROR: Go message UMessage_TA* is invalid");
+		LOGERROR("Go message UMessage_TA* is invalid");
 		return;
 	}
 
@@ -399,7 +402,7 @@ void MessagesComponent::setGoalScoredMessage(APlayerController_TA* pc, const FMe
 
 	if (!validUObject(playercontrollerPri->GameEvent) || !playercontrollerPri->GameEvent->IsA<AGameEvent_Soccar_TA>())
 	{
-		LOG("ERROR: Couldn't cast AGameEvent_TA* to AGameEvent_Soccar_TA*");
+		LOGERROR("Couldn't cast AGameEvent_TA* to AGameEvent_Soccar_TA*");
 		return;
 	}
 	auto* gameEvent = static_cast<AGameEvent_Soccar_TA*>(playercontrollerPri->GameEvent);
@@ -428,7 +431,7 @@ void MessagesComponent::setGoalScoredMessage(APlayerController_TA* pc, const FMe
 
 	if (!scorerPri)
 	{
-		LOG("ERROR: Unable to get APRI_TA* from message packet! Setting default goal scored message...");
+		LOGERROR("Unable to get APRI_TA* from message packet! Setting default goal scored message...");
 		//Messages.SpawnNotification("stadium drip", "PRI from msg packet was null!", 3);		// uncomment for testing
 
 		resetGoalScoredMessage(gameEvent->GoalScoredMessage);
@@ -444,7 +447,7 @@ void MessagesComponent::setGoalScoredMessage(APlayerController_TA* pc, const FMe
 	ATeamInfo* scoredPriTeam = scorerPri->Team;
 	if (!validUObject(scoredPriTeam))
 	{
-		LOG("ERROR: Couldn't resolve scorer's team num...");
+		LOGERROR("Couldn't resolve scorer's team num...");
 		//Messages.SpawnNotification("stadium drip", "[ERROR] Couldn't resolve scorer's team num...", 3);
 		resetGoalScoredMessage(gameEvent->GoalScoredMessage);
 		return;
@@ -454,7 +457,7 @@ void MessagesComponent::setGoalScoredMessage(APlayerController_TA* pc, const FMe
 	ATeamInfo* userTeam = playercontrollerPri->Team;
 	if (!validUObject(userTeam))
 	{
-		LOG("ERROR: Couldn't resolve user's team num...");
+		LOGERROR("Couldn't resolve user's team num...");
 		//Messages.SpawnNotification("stadium drip", "[ERROR] Couldn't resolve user's team num...", 3);
 		resetGoalScoredMessage(gameEvent->GoalScoredMessage);
 		return;

@@ -1,5 +1,11 @@
 #include "pch.h"
 #include "StadiumDrip.h"
+#include "Macros.hpp"
+#include "components/Textures.hpp"
+#include "components/Teams.hpp"
+#include "components/Messages.hpp"
+#include "components/MainMenu.hpp"
+#include "components/Replays.hpp"
 
 
 void StadiumDrip::RenderSettings()
@@ -77,7 +83,7 @@ void StadiumDrip::RenderWindow()
 
 void StadiumDrip::Misc_Tab()
 {
-	auto unlock_all_menu_nodes_cvar = GetCvar(Cvars::unlock_all_menu_nodes);
+	auto unlock_all_menu_nodes_cvar = getCvar(Cvars::unlock_all_menu_nodes);
 	if (!unlock_all_menu_nodes_cvar)
 		return;
 

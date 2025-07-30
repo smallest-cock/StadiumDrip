@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Replays.hpp"
+#include "Macros.hpp"
 
 
 // ##############################################################################################################
@@ -45,7 +46,7 @@ void ReplaysComponent::changeMap(const std::string& mapName)
 	UReplayManager_TA* man = UReplayManager_TA::GetInstance();
 	if (!validUObject(man))
 	{ 
-		LOG("ERROR: UReplayManager_TA* from UReplayManager_TA::GetInstance() is invalid");
+		LOGERROR("UReplayManager_TA* from UReplayManager_TA::GetInstance() is invalid");
 		return;
 	}
 
@@ -84,10 +85,10 @@ void ReplaysComponent::findMapNames()
 {
 	m_mapNames.clear();
 
-	auto list = Instances.GetInstanceOf<UMapList_TA>();
+	auto* list = Instances.GetInstanceOf<UMapList_TA>();
 	if (!validUObject(list))
 	{
-		LOG("ERROR: UMapList_TA* is null");
+		LOGERROR("UMapList_TA* is null");
 		return;
 	}
 

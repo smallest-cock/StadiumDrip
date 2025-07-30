@@ -1,7 +1,6 @@
 #pragma once
-#include "Macros.hpp"
-#include "Events.hpp"
 #include "Cvars.hpp"
+#include "components/Instances.hpp"
 #include <ModUtils/wrappers/GFxWrapper.hpp>
 
 
@@ -48,12 +47,19 @@ private:
 
 public:
 	std::shared_ptr<GameWrapper> gameWrapper;
-	//static constexpr std::string_view component_name = "Component";
 
+	// logging
 	template <typename... Args>
 	static void LOG(std::string_view format_str, Args&&... args)	// overload LOG function to add component name prefix
 	{
 		std::string strWithComponentName = std::format("[{}] {}", Derived::componentName, format_str);
+		::LOG(std::vformat(strWithComponentName, std::make_format_args(args...)));
+	}
+
+	template <typename... Args>
+	static void LOGERROR(std::string_view format_str, Args&&... args) // overload LOG function to add component name prefix
+	{
+		std::string strWithComponentName = std::format("[{}] ERROR: {}", Derived::componentName, format_str);
 		::LOG(std::vformat(strWithComponentName, std::make_format_args(args...)));
 	}
 	
@@ -269,20 +275,20 @@ public:
 		APlayerController* pc = Instances.getPlayerController();
 		if (!pc)
 		{
-			LOG("ERROR: APlayerController* is null");
+			LOGERROR("APlayerController* is null");
 			return false;
 		}
 
 		if (!validUObject(pc->myHUD) || !pc->myHUD->IsA<AHUDBase_TA>())
 		{
-			LOG("ERROR: pc->myHUD is invalid or not a AHUDBase_TA");
+			LOGERROR("pc->myHUD is invalid or not a AHUDBase_TA");
 			return false;
 		}
 
 		auto* hud = static_cast<AHUDBase_TA*>(pc->myHUD);
 		if (!validUObject(hud->Shell) || !validUObject(hud->Shell->SystemData))
 		{
-			LOG("ERROR: hud->Shell or hud->Shell->SystemData is invalid");
+			LOGERROR("hud->Shell or hud->Shell->SystemData is invalid");
 			return false;
 		}
 

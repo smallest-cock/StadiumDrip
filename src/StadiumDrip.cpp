@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "StadiumDrip.h"
+#include "components/Instances.hpp"
+#include "components/Teams.hpp"
 
 
 BAKKESMOD_PLUGIN(StadiumDrip, "Stadium Drip", plugin_version, PLUGINTYPE_FREEPLAY)

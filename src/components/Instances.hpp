@@ -20,7 +20,7 @@ public:
 	uintptr_t FindPattern(HMODULE module, const unsigned char* pattern, const char* mask);
 	uintptr_t GetGNamesAddress();
 	uintptr_t GetGObjectsAddress();
-	void InitGlobals();
+	bool InitGlobals();
 	bool AreGObjectsValid();
 	bool AreGNamesValid();
 	bool CheckGlobals();
@@ -139,8 +139,7 @@ public:
 			if (omitDefaultsAndArchetypes && uObject->ObjectFlags & RF_DefaultOrArchetypeFlags)
 				continue;
 
-			//if (CheckNotInName(uObject, "PostGameLobby") && CheckNotInName(uObject, "Test"))
-				objectInstances.push_back(static_cast<T*>(uObject));
+			objectInstances.push_back(static_cast<T*>(uObject));
 		}
 
 		return objectInstances;

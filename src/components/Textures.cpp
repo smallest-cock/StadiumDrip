@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Textures.hpp"
+#include "Macros.hpp"
+#include "Events.hpp"
+
 
 using namespace Files;
 
@@ -14,7 +17,7 @@ void MICCustomizationState::fromJson(const json& j)
 
 	if (!j.contains(ENABLED_KEY) || !j.contains(PARAMS_KEY))
 	{
-		LOG("ERROR: JSON for MICCustomizationState is missing \"{}\" or \"{}\" key", PARAMS_KEY, ENABLED_KEY);
+		LOGERROR("JSON for MICCustomizationState is missing \"{}\" or \"{}\" key", PARAMS_KEY, ENABLED_KEY);
 		return;
 	}
 
@@ -170,7 +173,7 @@ void TexturesComponent::initPaths()
 		std::ofstream file(m_adCustomizationsJson); // Opens the file for writing
 		if (!file)
 		{
-			LOG("ERROR: Failed to create file: \"{}\"", m_adCustomizationsJson.string());
+			LOGERROR("Failed to create file: \"{}\"", m_adCustomizationsJson.string());
 			return;
 		}
 
@@ -511,7 +514,7 @@ void TexturesComponent::applySelectedTexToAllAds()
 
 	if (!m_adImgOptionsMap.contains(*m_selectedAdName))
 	{
-		LOG("ERROR: \"{}\" not found in ad_img_options_map", *m_selectedAdName);
+		LOGERROR("\"{}\" not found in ad_img_options_map", *m_selectedAdName);
 		return;
 	}
 
@@ -532,7 +535,7 @@ void TexturesComponent::applyTexToAllAds(const std::string& selectedAdName)
 
 	if (!validUObject(adTex))
 	{
-		LOG("ERROR: UTexture* for ad is null: {}", selectedAdName);
+		LOGERROR("UTexture* for ad is null: {}", selectedAdName);
 		return;
 	}
 
@@ -813,9 +816,9 @@ void TexturesComponent::display()
 		if (ImGui::CollapsingHeader("debug info"))
 		{
 			// testing
-			ImGui::Text("m_onloadJsonData size: %i", m_onloadJsonData.size());
-			ImGui::Text("m_mapAdMicData size: %i", m_mapAdMicData.size());
-			ImGui::Text("m_adImgOptionsMap size: %i", m_adImgOptionsMap.size());
+			ImGui::Text("m_onloadJsonData size: %zu", m_onloadJsonData.size());
+			ImGui::Text("m_mapAdMicData size: %zu", m_mapAdMicData.size());
+			ImGui::Text("m_adImgOptionsMap size: %zu", m_adImgOptionsMap.size());
 		}
 	}
 }

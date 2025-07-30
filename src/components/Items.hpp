@@ -1,7 +1,5 @@
 #pragma once
 #include "Component.hpp"
-#include "Messages.hpp"
-
 
 
 class ItemsComponent : Component<ItemsComponent>
