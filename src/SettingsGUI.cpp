@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "StadiumDrip.h"
+#include "StadiumDrip.hpp"
 #include "Macros.hpp"
 #include "components/Textures.hpp"
 #include "components/Teams.hpp"
@@ -7,14 +7,13 @@
 #include "components/MainMenu.hpp"
 #include "components/Replays.hpp"
 
-
 void StadiumDrip::RenderSettings()
 {
-	const float content_height = ImGui::GetContentRegionAvail().y - footer_height;	// available height after accounting for footer
+	const float content_height = ImGui::GetContentRegionAvail().y - footer_height; // available height after accounting for footer
 
 	if (ImGui::BeginChild("PluginSettingsSection", ImVec2(0, content_height)))
 	{
-		GUI::alt_settings_header(h_label.c_str(), pretty_plugin_version);
+		GUI::alt_settings_header(h_label.c_str(), pretty_plugin_version, gameWrapper);
 
 		GUI::Spacing(4);
 
@@ -22,9 +21,7 @@ void StadiumDrip::RenderSettings()
 		std::string openMenuCommand = "togglemenu " + GetMenuName();
 		if (ImGui::Button("Open Menu"))
 		{
-			GAME_THREAD_EXECUTE_CAPTURE(
-				cvarManager->executeCommand(openMenuCommand);
-			, openMenuCommand);
+			GAME_THREAD_EXECUTE_CAPTURE(cvarManager->executeCommand(openMenuCommand);, openMenuCommand);
 		}
 
 		GUI::Spacing(8);
@@ -67,7 +64,7 @@ void StadiumDrip::RenderWindow()
 		Textures.display();
 		ImGui::EndTabItem();
 	}
-	
+
 	if (ImGui::BeginTabItem("Replays"))
 	{
 		Replays.display();

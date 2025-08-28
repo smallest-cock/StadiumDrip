@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "StadiumDrip.h"
-
+#include "StadiumDrip.hpp"
 
 // cvars
 CVarWrapper StadiumDrip::registerCvar_Bool(const CvarData& cvar, bool startingValue)
@@ -44,7 +43,6 @@ CVarWrapper StadiumDrip::getCvar(const CvarData& cvar)
 	return cvarManager->getCvar(cvar.name);
 }
 
-
 // commands
 void StadiumDrip::runCommand(const CvarData& command, float delaySeconds)
 {
@@ -82,7 +80,7 @@ void StadiumDrip::autoRunCommand(const CvarData& autoRunBool, const CvarData& co
 }
 
 void StadiumDrip::autoRunCommandInterval(
-	const CvarData& autoRunBool, const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand)
+    const CvarData& autoRunBool, const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand)
 {
 	auto autoRunBool_cvar = getCvar(autoRunBool);
 	if (!autoRunBool_cvar || !autoRunBool_cvar.getBoolValue())
@@ -90,7 +88,6 @@ void StadiumDrip::autoRunCommandInterval(
 
 	runCommandInterval(command, numIntervals, delaySeconds, delayFirstCommand);
 }
-
 
 // hooks
 void StadiumDrip::hookEvent(const char* funcName, std::function<void(std::string)> callback)

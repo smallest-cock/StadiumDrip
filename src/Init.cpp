@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "StadiumDrip.h"
+#include "StadiumDrip.hpp"
 #include "Events.hpp"
 #include "Macros.hpp"
 #include "components/Textures.hpp"
@@ -8,11 +8,10 @@
 #include "components/MainMenu.hpp"
 #include "components/Replays.hpp"
 
-
 void StadiumDrip::pluginInit()
 {
 	Format::construct_label({41, 11, 20, 6, 8, 13, 52, 12, 0, 3, 4, 52, 1, 24, 52, 44, 44, 37, 14, 22}, h_label);
-	PluginUpdates::check_for_updates(stringify_(StadiumDrip), short_plugin_version);
+	PluginUpdates::checkForUpdates(stringify_(StadiumDrip), short_plugin_version);
 
 	Textures.Initialize(gameWrapper);
 	Teams.Initialize(gameWrapper);
