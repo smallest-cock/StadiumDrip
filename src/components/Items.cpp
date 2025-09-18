@@ -2,7 +2,6 @@
 #include "Items.hpp"
 #include "Messages.hpp"
 
-
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
@@ -17,15 +16,13 @@ void ItemsComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
 
 void ItemsComponent::initFilepaths()
 {
-	m_pluginFolder    = gameWrapper->GetDataFolder() / "StadiumDrip";
+	m_pluginFolder = gameWrapper->GetDataFolder() / "StadiumDrip";
 	if (!fs::exists(m_pluginFolder))
 	{
 		fs::create_directory(m_pluginFolder);
 		LOG("'{}' didn't exist... so I created it.", m_pluginFolder.string());
 	}
 }
-
-
 
 // ##############################################################################################################
 // ###############################################    FUNCTIONS    ##############################################
@@ -110,12 +107,12 @@ void ItemsComponent::dumpItems()
 
 	itemsFile << std::endl;
 	itemsFile.close();
-	
+
 	Messages.spawnNotification("Stadium Drip", "Dumped items to 'item_dump.txt'", 3);
 }
 
 UOnlineProduct_TA* ItemsComponent::spawnProduct(
-	int item, TArray<FOnlineProductAttribute> attributes, int seriesid, int tradehold, bool log, const std::string& spawnMessage)
+    int item, TArray<FOnlineProductAttribute> attributes, int seriesid, int tradehold, bool log, const std::string& spawnMessage)
 {
 	auto* utils = reinterpret_cast<UProductUtil_TA*>(UProductUtil_TA::StaticClass());
 	if (!validUObject(utils))
@@ -162,9 +159,9 @@ bool ItemsComponent::spawnProductData(FOnlineProductData productData, const std:
 		return false;
 	}
 
-	FString Message = FString::create(spawnMessage == "" ? "" : spawnMessage);
+	FString Message = FString::create(spawnMessage);
 
-	saveData->eventGiveOnlineProduct(onlineProduct, Message);
+	saveData->eventGiveOnlineProduct(onlineProduct, Message, 0.0f);
 	saveData->GiveOnlineProductHelper(onlineProduct);
 	saveData->OnNewOnlineProduct(onlineProduct, Message);
 	saveData->EventNewOnlineProduct(saveData, onlineProduct, Message);
@@ -200,8 +197,7 @@ uint64_t ItemsComponent::getTimestampLong()
 
 void ItemsComponent::spawnBallInFreeplay()
 {
-	spawnInFreeplay<ABall_TA>({ 500, 500, 500 });
+	spawnInFreeplay<ABall_TA>({500, 500, 500});
 }
-
 
 class ItemsComponent Items{};

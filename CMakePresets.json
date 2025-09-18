@@ -25,7 +25,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_CXX_COMPILER": "cl",
-                "CMAKE_LINKER": "link"
+                "CMAKE_LINKER": "link",
+                "CMAKE_RC_COMPILER": "rc"
             },
             "condition": {
                 "type": "equals",

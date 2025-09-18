@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.5
+- Added new Boostfield Mall map to main menu background changer
+- Updated internal SDK to match latest version of RL (v2.56)
+
 ## v1.2.4
 - Updated internal SDK to match latest version of RL (v2.55)
 - Added an update button in settings to easily update the plugin when there's a new version available
