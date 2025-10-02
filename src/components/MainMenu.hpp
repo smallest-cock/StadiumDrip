@@ -8,7 +8,7 @@ public:
 	~MainMenuComponent() {}
 
 	static constexpr std::string_view componentName = "MainMenu";
-	void                              Initialize(const std::shared_ptr<GameWrapper>& gw);
+	void                              init(const std::shared_ptr<GameWrapper>& gw);
 
 private:
 	void initCvars();
@@ -29,7 +29,7 @@ private:
 
 	// cvar values
 	std::shared_ptr<bool>  m_useCustomLocation   = std::make_shared<bool>(false);
-	std::shared_ptr<bool>  m_rememberCamRotation = std::make_shared<bool>(true);
+	std::shared_ptr<bool>  m_preserveCamRotation = std::make_shared<bool>(true);
 	std::shared_ptr<float> m_carLocationX        = std::make_shared<float>(DEFAULT_CAR_X);
 	std::shared_ptr<float> m_carLocationY        = std::make_shared<float>(DEFAULT_CAR_Y);
 	std::shared_ptr<float> m_carLocationZ        = std::make_shared<float>(DEFAULT_CAR_Z);
@@ -73,8 +73,8 @@ private:
 	void restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* premiumGarage = nullptr);
 
 public:
-	void        applyCustomCamSettings();
-	inline void setMapHasBeenLoaded(bool val) { m_aMapHasLoaded = val; }
+	void applyCustomCamSettings();
+	void setMapHasBeenLoaded(bool val) { m_aMapHasLoaded = val; }
 
 private:
 	// gui

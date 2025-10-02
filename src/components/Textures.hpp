@@ -1,7 +1,5 @@
 #pragma once
 #include "Component.hpp"
-#include "Messages.hpp"
-
 
 // holds json data from onload
 struct ParamCustomizationState
@@ -18,7 +16,6 @@ struct MICCustomizationState
 	void fromJson(const json& j);
 	json toJson() const;
 };
-
 
 // holds all data necessary for ad changing functionality. for use in imgui, applying texture, etc.
 struct MICParamData
@@ -38,7 +35,6 @@ struct MICData
 	void display(const std::string& mic_name, std::shared_ptr<GameWrapper>& gameWrapper);
 };
 
-
 class TexturesComponent : Component<TexturesComponent>
 {
 public:
@@ -46,7 +42,7 @@ public:
 	~TexturesComponent() {}
 
 	static constexpr std::string_view componentName = "Textures";
-	void Initialize(const std::shared_ptr<GameWrapper>& gw);
+	void                              init(const std::shared_ptr<GameWrapper>& gw);
 
 private:
 	void initPaths();
@@ -73,7 +69,7 @@ private:
 	std::string                                         m_currentMapName;
 	std::map<std::string, Files::ImageInfo>             m_adImgOptionsMap;
 	std::unordered_map<std::string, UTexture2DDynamic*> m_cachedAdTextures;
-	//std::unordered_map<std::string, TArray<uint8_t>>    savedImgBytes; // can be used when switching to rlsdk method of creating textures
+	// std::unordered_map<std::string, TArray<uint8_t>>    savedImgBytes; // can be used when switching to rlsdk method of creating textures
 
 	// used to store loaded json data when plugin first loads, which will be lazily consumed (eventually loaded into m_mapAdMicData)
 	std::unordered_map<std::string, std::unordered_map<std::string, MICCustomizationState>> m_onloadJsonData;

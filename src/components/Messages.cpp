@@ -1,6 +1,7 @@
-#include "ModUtils/gui/GuiTools.hpp"
 #include "pch.h"
 #include "Messages.hpp"
+#include "Cvars.hpp"
+#include "ModUtils/gui/GuiTools.hpp"
 #include "Macros.hpp"
 #include "Events.hpp"
 #include <ModUtils/wrappers/GFxWrapper.hpp>
@@ -9,7 +10,7 @@
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-void MessagesComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void MessagesComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -21,20 +22,20 @@ void MessagesComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
 void MessagesComponent::initCvars()
 {
 	// bools
-	auto enableMotd_cvar = registerCvar_bool(Cvars::enable_motd, false);
+	auto enableMotd_cvar = registerCvar_bool(Cvars::enableMotd, false);
 	enableMotd_cvar.bindTo(m_enableMotd);
 	enableMotd_cvar.addOnValueChanged(
-	    [this](std::string cvarName, CVarWrapper updatedCvar)
+	    [this](std::string oldVal, CVarWrapper updatedCvar)
 	    {
 		    // if (pluginHasJustBeenLoaded) return;
 
 		    bool updatedVal = updatedCvar.getBoolValue();
-
 		    if (updatedVal)
 		    {
-			    GAME_THREAD_EXECUTE(Messages.applyCustomMotd();
-			        // RunCommand(Commands::apply_motd);
-			    );
+			    GAME_THREAD_EXECUTE({
+				    Messages.applyCustomMotd();
+				    // RunCommand(Commands::apply_motd);
+			    });
 		    }
 		    // else
 		    //{
@@ -43,33 +44,33 @@ void MessagesComponent::initCvars()
 		    //	);
 		    // }
 
-		    LOG("The callback worked for {}", cvarName);
+		    LOG("The callback worked for {}", oldVal);
 		    LOG("Set value to: {}", updatedVal);
 	    });
 
-	registerCvar_bool(Cvars::use_single_motd_color, false).bindTo(m_useSolidMotdColor);
-	registerCvar_bool(Cvars::use_gradient_motd_color, true).bindTo(m_useGradienMotdColor);
-	registerCvar_bool(Cvars::use_custom_game_messages, true).bindTo(m_useCustomGameMessages);
-	registerCvar_bool(Cvars::unlock_all_menu_nodes, false).bindTo(m_unlockAllMenuNodes);
+	registerCvar_bool(Cvars::useSingleMotdColor, false).bindTo(m_useSingleMotdColor);
+	registerCvar_bool(Cvars::useGradientMotdColor, true).bindTo(m_useGradienMotdColor);
+	registerCvar_bool(Cvars::useCustomGameMessages, true).bindTo(m_useCustomGameMessages);
+	registerCvar_bool(Cvars::unlockAllMenuNodes, false).bindTo(m_unlockAllMenuNodes);
 
 	// numbers
-	registerCvar_number(Cvars::motd_font_size, 20, true, 1, 300).bindTo(m_motdFontSize);
+	registerCvar_number(Cvars::motdFontSize, 20, true, 1, 300).bindTo(m_motdFontSize);
 
 	// strings
-	registerCvar_string(Cvars::user_scored_msg, "i'm that guy pal!").bindTo(m_userScoredMsg);
-	registerCvar_string(Cvars::teammate_scored_msg, "{Player} just peaked!").bindTo(m_teammateScoredMsg);
-	registerCvar_string(Cvars::opponent_scored_msg, "{Player} is a tryhard!").bindTo(m_oppScoredMsg);
+	registerCvar_string(Cvars::userScoredMsg, "i'm that guy pal!").bindTo(m_userScoredMsg);
+	registerCvar_string(Cvars::teammateScoredMsg, "{Player} just peaked!").bindTo(m_teammateScoredMsg);
+	registerCvar_string(Cvars::opponentScoredMsg, "{Player} is a tryhard!").bindTo(m_oppScoredMsg);
 	registerCvar_string(Cvars::motd, "sub to Scrimpf on YT <3").bindTo(m_motd);
-	registerCvar_string(Cvars::raw_html_motd, "sub to Scrimpf on YT &lt;3").bindTo(m_motdRawHtml);
-	registerCvar_string(Cvars::countdown_msg_3, "get").bindTo(m_countdownMsg3);
-	registerCvar_string(Cvars::countdown_msg_2, "ready").bindTo(m_countdownMsg2);
-	registerCvar_string(Cvars::countdown_msg_1, "to").bindTo(m_countdownMsg1);
-	registerCvar_string(Cvars::go_message, "cook!").bindTo(m_countdownMsgGo);
+	registerCvar_string(Cvars::rawHtmlMotd, "sub to Scrimpf on YT &lt;3").bindTo(m_motdRawHtml);
+	registerCvar_string(Cvars::countdownMsg3, "get").bindTo(m_countdownMsg3);
+	registerCvar_string(Cvars::countdownMsg2, "ready").bindTo(m_countdownMsg2);
+	registerCvar_string(Cvars::countdownMsg1, "to").bindTo(m_countdownMsg1);
+	registerCvar_string(Cvars::goMessage, "cook!").bindTo(m_countdownMsgGo);
 
 	// colors
-	registerCvar_color(Cvars::motd_single_color, "#FF00FF").bindTo(m_motdSolidColor);
-	registerCvar_color(Cvars::motd_gradient_color_begin, "#FFFFFF").bindTo(m_motdGradientColorBegin);
-	registerCvar_color(Cvars::motd_gradient_color_end, "#FF00E9").bindTo(m_motdGradientColorEnd);
+	registerCvar_color(Cvars::motdSingleColor, "#FF00FF").bindTo(m_motdSingleColor);
+	registerCvar_color(Cvars::motdGradientColorBegin, "#FFFFFF").bindTo(m_motdGradientColorBegin);
+	registerCvar_color(Cvars::motdGradientColorEnd, "#FF00E9").bindTo(m_motdGradientColorEnd);
 }
 
 void MessagesComponent::initHooks()
@@ -165,7 +166,7 @@ void MessagesComponent::initHooks()
 
 void MessagesComponent::initCommands()
 {
-	registerCommand(Commands::apply_motd, [this](std::vector<std::string> args) { applyCustomMotd(); });
+	registerCommand(Commands::applyMotd, [this](std::vector<std::string> args) { applyCustomMotd(); });
 }
 
 // ##############################################################################################################
@@ -208,12 +209,12 @@ void MessagesComponent::calculateMotdText()
 		return;
 
 	// basically unescapes my shitty "encoding" used to safely store a cvar string containing # and " in a .cfg file
-	const std::string rawText = Format::UnescapeQuotesHTML((*m_useSolidMotdColor || *m_useGradienMotdColor) ? *m_motd : *m_motdRawHtml);
+	const std::string rawText = Format::UnescapeQuotesHTML((*m_useSingleMotdColor || *m_useGradienMotdColor) ? *m_motd : *m_motdRawHtml);
 	std::string       calculatedText = rawText;
 
-	if (*m_useSolidMotdColor)
+	if (*m_useSingleMotdColor)
 	{
-		const std::string hex_color = Format::LinearColorToHex(*m_motdSolidColor, false);
+		const std::string hex_color = Format::LinearColorToHex(*m_motdSingleColor, false);
 		calculatedText              = std::format(
             "<font size=\"{}\" color=\"{}\">{}</font>", *m_motdFontSize, hex_color, Format::EscapeForHTML(rawText));
 	}
@@ -375,10 +376,7 @@ void MessagesComponent::resetCountdownMessages(AGameEvent_TA* gameEvent)
 	setCountdownMessages(gameEvent, countdownMsgs);
 }
 
-void MessagesComponent::resetGoalScoredMessage(UMessage_TA* msg)
-{
-	setMessageText(msg, DEFAULT_SCORE_MSG);
-}
+void MessagesComponent::resetGoalScoredMessage(UMessage_TA* msg) { setMessageText(msg, DEFAULT_SCORE_MSG); }
 
 void MessagesComponent::setGoalScoredMessage(APlayerController_TA* pc, const FMessagePacket& msgPacket)
 {
@@ -491,26 +489,26 @@ void MessagesComponent::setMessageText(UMessage_TA* msg, const std::string& newT
 
 void MessagesComponent::display()
 {
-	auto enable_motd_cvar               = getCvar(Cvars::enable_motd);
+	auto enable_motd_cvar               = getCvar(Cvars::enableMotd);
 	auto motd_cvar                      = getCvar(Cvars::motd);
-	auto raw_html_motd_cvar             = getCvar(Cvars::raw_html_motd);
-	auto use_single_motd_color_cvar     = getCvar(Cvars::use_single_motd_color);
-	auto motd_single_color_cvar         = getCvar(Cvars::motd_single_color);
-	auto motd_font_size_cvar            = getCvar(Cvars::motd_font_size);
-	auto use_gradient_motd_color_cvar   = getCvar(Cvars::use_gradient_motd_color);
-	auto motd_gradient_color_begin_cvar = getCvar(Cvars::motd_gradient_color_begin);
-	auto motd_gradient_color_end_cvar   = getCvar(Cvars::motd_gradient_color_end);
+	auto raw_html_motd_cvar             = getCvar(Cvars::rawHtmlMotd);
+	auto use_single_motd_color_cvar     = getCvar(Cvars::useSingleMotdColor);
+	auto motd_single_color_cvar         = getCvar(Cvars::motdSingleColor);
+	auto motd_font_size_cvar            = getCvar(Cvars::motdFontSize);
+	auto use_gradient_motd_color_cvar   = getCvar(Cvars::useGradientMotdColor);
+	auto motd_gradient_color_begin_cvar = getCvar(Cvars::motdGradientColorBegin);
+	auto motd_gradient_color_end_cvar   = getCvar(Cvars::motdGradientColorEnd);
 	if (!enable_motd_cvar)
 		return;
 
-	auto use_custom_game_messages_cvar = getCvar(Cvars::use_custom_game_messages);
-	auto countdown_msg_3_cvar          = getCvar(Cvars::countdown_msg_3);
-	auto countdown_msg_2_cvar          = getCvar(Cvars::countdown_msg_2);
-	auto countdown_msg_1_cvar          = getCvar(Cvars::countdown_msg_1);
-	auto go_message_cvar               = getCvar(Cvars::go_message);
-	auto user_scored_msg_cvar          = getCvar(Cvars::user_scored_msg);
-	auto teammate_scored_msg_cvar      = getCvar(Cvars::teammate_scored_msg);
-	auto opponent_scored_msg_cvar      = getCvar(Cvars::opponent_scored_msg);
+	auto use_custom_game_messages_cvar = getCvar(Cvars::useCustomGameMessages);
+	auto countdown_msg_3_cvar          = getCvar(Cvars::countdownMsg3);
+	auto countdown_msg_2_cvar          = getCvar(Cvars::countdownMsg2);
+	auto countdown_msg_1_cvar          = getCvar(Cvars::countdownMsg1);
+	auto go_message_cvar               = getCvar(Cvars::goMessage);
+	auto user_scored_msg_cvar          = getCvar(Cvars::userScoredMsg);
+	auto teammate_scored_msg_cvar      = getCvar(Cvars::teammateScoredMsg);
+	auto opponent_scored_msg_cvar      = getCvar(Cvars::opponentScoredMsg);
 	if (!use_custom_game_messages_cvar)
 		return;
 
@@ -590,7 +588,10 @@ void MessagesComponent::display()
 
 			if (ImGui::Button("Apply"))
 			{
-				GAME_THREAD_EXECUTE(Messages.calculateMotdText(); Messages.applyCustomMotd(););
+				GAME_THREAD_EXECUTE({
+					Messages.calculateMotdText();
+					Messages.applyCustomMotd();
+				});
 			}
 
 			if (useSingleMotdColor)

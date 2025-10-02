@@ -2,8 +2,8 @@
 
 namespace Events
 {
-constexpr auto EngineShare_X_EventPreLoadMap                 = "Function ProjectX.EngineShare_X.EventPreLoadMap"; // loading screen start
-constexpr auto LoadingScreen_TA_HandlePostLoadMap            = "Function TAGame.LoadingScreen_TA.HandlePostLoadMap"; // loading screen end
+constexpr auto EngineShare_X_EventPreLoadMap      = "Function ProjectX.EngineShare_X.EventPreLoadMap";    // loading screen start
+constexpr auto LoadingScreen_TA_HandlePostLoadMap = "Function TAGame.LoadingScreen_TA.HandlePostLoadMap"; // loading screen end
 
 constexpr auto Team_TA_SetCustomTeamName                     = "Function TAGame.Team_TA.SetCustomTeamName";
 constexpr auto Team_TA_SetColorList                          = "Function TAGame.Team_TA.SetColorList";
@@ -43,4 +43,4 @@ constexpr auto GFxData_Community_TA_OnShellSet                    = "Function TA
 constexpr auto MenuTreeNode_TA_OnGFxNodeSet                       = "Function TAGame.MenuTreeNode_TA.OnGFxNodeSet";
 constexpr auto MenuTreeNode_TA_HandleCrumbTrailUpdated            = "Function TAGame.MenuTreeNode_TA.HandleCrumbTrailUpdated";
 constexpr auto GFxData_MenuTreeNode_TA_CanShowEngagementEventType = "Function TAGame.GFxData_MenuTreeNode_TA.CanShowEngagementEventType";
-}
+} // namespace Events

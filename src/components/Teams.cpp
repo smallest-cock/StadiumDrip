@@ -1,14 +1,14 @@
+#include "Cvars.hpp"
 #include "pch.h"
 #include "Teams.hpp"
 #include "Macros.hpp"
 #include "Events.hpp"
 
-
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-void TeamsComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void TeamsComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -17,199 +17,182 @@ void TeamsComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
 	initCommands();
 }
 
-// clang-format off
 void TeamsComponent::initCvars()
 {
-	auto updateColors = [this](std::string name, CVarWrapper updatedCvar)
-	{
-		GAME_THREAD_EXECUTE(
-			applyColors();
-		);
-	};
+	auto updateColors = [this](std::string name, CVarWrapper updatedCvar) { GAME_THREAD_EXECUTE({ applyColors(); }); };
 
 	// bools
-	auto useCustomTeamColors_cvar = registerCvar_bool(Cvars::use_custom_team_colors, true);
+	auto useCustomTeamColors_cvar = registerCvar_bool(Cvars::useCustomTeamColors, true);
 	useCustomTeamColors_cvar.bindTo(m_useCustomTeamColors);
 	useCustomTeamColors_cvar.addOnValueChanged(updateColors);
 
-	auto useSingleFreeplayColor_cvar = registerCvar_bool(Cvars::use_single_freeplay_color, false);
+	auto useSingleFreeplayColor_cvar = registerCvar_bool(Cvars::useSingleFreeplayColor, false);
 	useSingleFreeplayColor_cvar.bindTo(m_useSingleFreeplayColor);
 	useSingleFreeplayColor_cvar.addOnValueChanged(updateColors);
 
-	auto useRGBFreeplayColors_cvar = registerCvar_bool(Cvars::use_rgb_freeplay_colors, false);
+	auto useRGBFreeplayColors_cvar = registerCvar_bool(Cvars::useRgbFreeplayColors, false);
 	useRGBFreeplayColors_cvar.bindTo(m_useRGBFreeplayColors);
 	useRGBFreeplayColors_cvar.addOnValueChanged(updateColors);
 
-	auto useCustomTeamNames_cvar = registerCvar_bool(Cvars::use_custom_team_names, true);
+	auto useCustomTeamNames_cvar = registerCvar_bool(Cvars::useCustomTeamNames, true);
 	useCustomTeamNames_cvar.bindTo(m_useCustomTeamNames);
-	useCustomTeamNames_cvar.addOnValueChanged([this](...)
-		{
-			GAME_THREAD_EXECUTE(
-				changeNamesFromGameEvent();
-			);
-		});
+	useCustomTeamNames_cvar.addOnValueChanged([this](...) { GAME_THREAD_EXECUTE({ changeNamesFromGameEvent(); }); });
 
 	// strings
-	auto blueName_cvar = registerCvar_string(Cvars::blue_team_name, "crips");
+	auto blueName_cvar = registerCvar_string(Cvars::blueTeamName, "crips");
 	blueName_cvar.bindTo(m_blueName);
-	blueName_cvar.addOnValueChanged([this](std::string name, CVarWrapper updatedCvar)
-	{
-		std::string updatedVal = updatedCvar.getStringValue();
+	blueName_cvar.addOnValueChanged(
+	    [this](std::string name, CVarWrapper updatedCvar)
+	    {
+		    std::string updatedVal = updatedCvar.getStringValue();
 
-		GAME_THREAD_EXECUTE_CAPTURE(
-			changeTeamNames(updatedVal, *m_orangeName);
-		, updatedVal);
+		    GAME_THREAD_EXECUTE({ changeTeamNames(updatedVal, *m_orangeName); }, updatedVal);
 
-		DEBUGLOG("{} changed...", name);
-	});
+		    DEBUGLOG("{} changed...", name);
+	    });
 
-	auto orangeName_cvar = registerCvar_string(Cvars::orange_team_name, "bloods");
+	auto orangeName_cvar = registerCvar_string(Cvars::orangeTeamName, "bloods");
 	orangeName_cvar.bindTo(m_orangeName);
-	orangeName_cvar.addOnValueChanged([this](std::string name, CVarWrapper updatedCvar)
-	{
-		std::string updatedVal = updatedCvar.getStringValue();
+	orangeName_cvar.addOnValueChanged(
+	    [this](std::string name, CVarWrapper updatedCvar)
+	    {
+		    std::string updatedVal = updatedCvar.getStringValue();
 
-		GAME_THREAD_EXECUTE_CAPTURE(
-			changeTeamNames(*m_blueName, updatedVal);
-		, updatedVal);
+		    GAME_THREAD_EXECUTE({ changeTeamNames(*m_blueName, updatedVal); }, updatedVal);
 
-		DEBUGLOG("{} changed...", name);
-	});
+		    DEBUGLOG("{} changed...", name);
+	    });
 
 	// numbers
-	registerCvar_number(Cvars::rgb_speed, 0, true, -14, 9).bindTo(m_rgbSpeed);
+	registerCvar_number(Cvars::rgbSpeed, 0, true, -14, 9).bindTo(m_rgbSpeed);
 
 	// colors
-	auto blueColor_cvar = registerCvar_color(Cvars::blue_team_color, "#FF00BC");
+	auto blueColor_cvar = registerCvar_color(Cvars::blueTeamColor, "#FF00BC");
 	blueColor_cvar.bindTo(m_blueColor);
 
-	auto orangeColor_cvar = registerCvar_color(Cvars::orange_team_color, "#FFF800");
+	auto orangeColor_cvar = registerCvar_color(Cvars::orangeTeamColor, "#FFF800");
 	orangeColor_cvar.bindTo(m_orangeColor);
 
-	auto solidFreeplayColor_cvar = registerCvar_color(Cvars::single_freeplay_color, "#FF2222");
+	auto solidFreeplayColor_cvar = registerCvar_color(Cvars::singleFreeplayColor, "#FF2222");
 	solidFreeplayColor_cvar.bindTo(m_solidFreeplayColor);
-	solidFreeplayColor_cvar.addOnValueChanged([this](std::string name, CVarWrapper updatedCvar)
-	{
-		if (!gameWrapper->IsInFreeplay())
-			return;
+	solidFreeplayColor_cvar.addOnValueChanged(
+	    [this](std::string name, CVarWrapper updatedCvar)
+	    {
+		    if (!gameWrapper->IsInFreeplay())
+			    return;
 
-		GAME_THREAD_EXECUTE(
-			applySolidFreeplayColor();
-		);
-	});
+		    GAME_THREAD_EXECUTE({ applySolidFreeplayColor(); });
+	    });
 }
 
 void TeamsComponent::initHooks()
 {
 	// for freeplay colors
-	hookWithCaller(Events::Team_TA_SetColorList, [this](ActorWrapper Caller, void* Params, ...)
-	{
-		// freeplay seems to be the only place we need to override SetColorList params (editing archetypes doesnt work for whatever reason)
-		if (!gameWrapper->IsInFreeplay())
-			return;
+	hookWithCaller(Events::Team_TA_SetColorList,
+	    [this](ActorWrapper Caller, void* Params, ...)
+	    {
+		    // freeplay seems to be the only place we need to override SetColorList params (editing archetypes doesnt work for whatever
+		    // reason)
+		    if (!gameWrapper->IsInFreeplay())
+			    return;
 
-		auto caller = reinterpret_cast<ATeam_TA*>(Caller.memory_address);
-		if (!validUObject(caller))
-			return;
+		    auto caller = reinterpret_cast<ATeam_TA*>(Caller.memory_address);
+		    if (!validUObject(caller))
+			    return;
 
-		auto params = reinterpret_cast<ATeam_TA_execSetColorList_Params*>(Params);
-		if (!params)
-			return;
+		    auto params = reinterpret_cast<ATeam_TA_execSetColorList_Params*>(Params);
+		    if (!params)
+			    return;
 
-		// determine color
-		FLinearColor newColor{};
-		if (*m_useRGBFreeplayColors)
-			return;
-		else if (*m_useSingleFreeplayColor)
-			newColor = Colors::CvarColorToFLinearColor(*m_solidFreeplayColor);
-		else if (*m_useCustomTeamColors)
-			newColor = Colors::CvarColorToFLinearColor(caller->TeamIndex == 0 ? *m_blueColor : *m_orangeColor);
-		else
-		{
-			if (!m_backedUpOgBlueColor || !m_backedUpOgOrangeColor)
-				backupOgColors();
-			return;
-		}
+		    // determine color
+		    FLinearColor newColor{};
+		    if (*m_useRGBFreeplayColors)
+			    return;
+		    else if (*m_useSingleFreeplayColor)
+			    newColor = Colors::CvarColorToFLinearColor(*m_solidFreeplayColor);
+		    else if (*m_useCustomTeamColors)
+			    newColor = Colors::CvarColorToFLinearColor(caller->TeamIndex == 0 ? *m_blueColor : *m_orangeColor);
+		    else
+		    {
+			    if (!m_backedUpOgBlueColor || !m_backedUpOgOrangeColor)
+				    backupOgColors();
+			    return;
+		    }
 
-		// edit param colors
-		for (auto& col : params->ColorList)
-			col = newColor;
+		    // edit param colors
+		    for (auto& col : params->ColorList)
+			    col = newColor;
 
-		LOG("Changed SetColorList() params for team {}", Format::ToHexString(caller));
-	});
+		    LOG("Changed SetColorList() params for team {}", Format::ToHexString(caller));
+	    });
 
 	// for freeplay RGB
-	hookWithCallerPost(Events::GFxHUD_TA_Tick, [this](ActorWrapper Caller, ...)
-	{
-		if (!*m_useRGBFreeplayColors || !gameWrapper->IsInFreeplay())
-			return;
+	hookWithCallerPost(Events::GFxHUD_TA_Tick,
+	    [this](ActorWrapper Caller, ...)
+	    {
+		    if (!*m_useRGBFreeplayColors || !gameWrapper->IsInFreeplay())
+			    return;
 
-		tickRGB();
+		    tickRGB();
 
-		auto hud = reinterpret_cast<AGFxHUD_TA*>(Caller.memory_address);
-		if (!validUObject(hud) || !validUObject(hud->TeamGameEvent))
-			return;
+		    auto hud = reinterpret_cast<AGFxHUD_TA*>(Caller.memory_address);
+		    if (!validUObject(hud) || !validUObject(hud->TeamGameEvent))
+			    return;
 
-		applyRgbColor(hud->TeamGameEvent);
-	});
+		    applyRgbColor(hud->TeamGameEvent);
+	    });
 
 	// team names
-	hookWithCaller(Events::TeamNameComponent_TA_GetTeamName, [this](ActorWrapper Caller, void* Params, ...)
-	{
-		if (!*m_useCustomTeamNames)
-			return;
+	hookWithCaller(Events::TeamNameComponent_TA_GetTeamName,
+	    [this](ActorWrapper Caller, void* Params, ...)
+	    {
+		    if (!*m_useCustomTeamNames)
+			    return;
 
-		EGameStates state = getGameState();
-		if (state == EGameStates::Menu || state == EGameStates::Freeplay)
-			return;
+		    EGameStates state = getGameState();
+		    if (state == EGameStates::Menu || state == EGameStates::Freeplay)
+			    return;
 
-		auto* caller = reinterpret_cast<UTeamNameComponent_TA*>(Caller.memory_address);
-		if (!validUObject(caller))
-			return;
-	
-		auto* params = reinterpret_cast<UTeamNameComponent_TA_execGetTeamName_Params*>(Params);
-		if (!params)
-			return;
-	
-		const auto&  teamNum      = caller->TeamIndex;
-		std::string  existingName = caller->SanitizedTeamName.ToString();
-		const auto&  customName   = teamNum == 0 ? *m_blueName : *m_orangeName;
-		std::string& ogNameCache  = teamNum == 0 ? m_ogBlueName : m_ogOrangeName;
+		    auto* caller = reinterpret_cast<UTeamNameComponent_TA*>(Caller.memory_address);
+		    if (!validUObject(caller))
+			    return;
 
-		// save OG name if necessary
-		/*
-			NOTE:
-			We keep trying to update ogNameCache on every GetTeamName call, even if SanitizedTeamName is empty or censored at first,
-			bc SanitizedTeamName wont contain the actual club name (if it exists) on the first calls, but might on later calls
-		*/
-		if (!existingName.empty() && existingName != customName)
-		{
-			// if OG name is empty, or (likely) censored: update cached OG name
-			if (ogNameCache.empty() || ogNameCache.find("*") == 0)
-				ogNameCache = existingName;
-		}
-			
-		// o p t i m i z a t i o n  (comes after the code above for updating ogNameCache on purpose)
-		if (existingName == customName)
-			return;
-			
-		caller->SanitizedTeamName = FString::create(customName);
-		LOG("Modified SanitizedTeamName from TeamNameComponent_TA::GetTeamName pre hook");
-	});
+		    auto* params = reinterpret_cast<UTeamNameComponent_TA_execGetTeamName_Params*>(Params);
+		    if (!params)
+			    return;
+
+		    const auto&  teamNum      = caller->TeamIndex;
+		    std::string  existingName = caller->SanitizedTeamName.ToString();
+		    const auto&  customName   = teamNum == 0 ? *m_blueName : *m_orangeName;
+		    std::string& ogNameCache  = teamNum == 0 ? m_ogBlueName : m_ogOrangeName;
+
+		    // save OG name if necessary
+		    /*
+		        NOTE:
+		        We keep trying to update ogNameCache on every GetTeamName call, even if SanitizedTeamName is empty or censored at first,
+		        bc SanitizedTeamName wont contain the actual club name (if it exists) on the first calls, but might on later calls
+		    */
+		    if (!existingName.empty() && existingName != customName)
+		    {
+			    // if OG name is empty, or (likely) censored: update cached OG name
+			    if (ogNameCache.empty() || ogNameCache.find("*") == 0)
+				    ogNameCache = existingName;
+		    }
+
+		    // o p t i m i z a t i o n  (comes after the code above for updating ogNameCache on purpose)
+		    if (existingName == customName)
+			    return;
+
+		    caller->SanitizedTeamName = FString::create(customName);
+		    LOG("Modified SanitizedTeamName from TeamNameComponent_TA::GetTeamName pre hook");
+	    });
 }
 
 void TeamsComponent::initCommands()
 {
-	registerCommand(Commands::apply_team_colors, [this](std::vector<std::string>)
-	{
-		applyColors();
-	});
-
-	registerCommand(Commands::apply_team_names, [this](std::vector<std::string>) { changeNamesFromGameEvent(); });
+	registerCommand(Commands::applyTeamColors, [this](std::vector<std::string>) { applyColors(); });
+	registerCommand(Commands::applyTeamNames, [this](std::vector<std::string>) { changeNamesFromGameEvent(); });
 }
-// clang-format on
-
-
 
 // ##############################################################################################################
 // ###############################################    FUNCTIONS    ##############################################
@@ -222,22 +205,22 @@ void TeamsComponent::applyColors()
 
 	if (state == EGameStates::Freeplay)
 	{
-		if (*m_useRGBFreeplayColors)	// just return, bc GFxHUD_TA::Tick() hook already handles applying RGB colors
+		if (*m_useRGBFreeplayColors) // just return, bc GFxHUD_TA::Tick() hook already handles applying RGB colors
 			return;
 
 		if (*m_useSingleFreeplayColor)
-			applySolidFreeplayColor();	// apply solid freeplay color
+			applySolidFreeplayColor(); // apply solid freeplay color
 		else if (*m_useCustomTeamColors)
-			applyCustomColors(state);	// apply custom team colors
+			applyCustomColors(state); // apply custom team colors
 		else
-			applyOgColors(state);		// apply OG colors
+			applyOgColors(state); // apply OG colors
 	}
 	else
 	{
 		if (*m_useCustomTeamColors)
-			applyCustomColors(state);	// apply custom team colors
+			applyCustomColors(state); // apply custom team colors
 		else
-			applyOgColors(state);		// apply OG colors
+			applyOgColors(state); // apply OG colors
 	}
 }
 
@@ -324,7 +307,6 @@ void TeamsComponent::applyOgColors(EGameStates state)
 		}
 	}
 }
-
 
 void TeamsComponent::applyColorsToArchetypes(AGameEvent_Team_TA* event)
 {
@@ -428,7 +410,7 @@ void TeamsComponent::backupOgColorsForTeam(const ATeam_TA* team)
 		return;
 	}
 
-	const auto&           teamNum = team->TeamIndex;
+	const auto&        teamNum = team->TeamIndex;
 	OgTeamColorBackup& backup  = teamNum == 0 ? m_ogBlueColor : m_ogOrangeColor;
 
 	if (team->DefaultColorList.size() != COLOR_ARRAY_SIZE)
@@ -457,11 +439,10 @@ void TeamsComponent::backupOgColorsForTeam(const ATeam_TA* team)
 
 void TeamsComponent::restoreOgColorsInUnload()
 {
-	m_inUnload = true;
+	m_inUnload        = true;
 	EGameStates state = getGameState();
 	applyOgColors(state);
 }
-
 
 FLinearColor TeamsComponent::getCustomColor(int teamNum)
 {
@@ -469,11 +450,7 @@ FLinearColor TeamsComponent::getCustomColor(int teamNum)
 	return Colors::CvarColorToFLinearColor(customCol);
 }
 
-void TeamsComponent::tickRGB()
-{
-	GRainbowColor::TickRGB(*m_rgbSpeed, DEFAULT_RGB_SPEED);
-}
-
+void TeamsComponent::tickRGB() { GRainbowColor::TickRGB(*m_rgbSpeed, DEFAULT_RGB_SPEED); }
 
 // ################################### live color changing ####################################
 
@@ -493,13 +470,12 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const FLinearColor& 
 		col = color;
 
 	team->UpdateColors(); // updates HUD colors live
-	
 
 	// change default colors
 	for (auto& col : team->DefaultColorList)
 		col = color;
 
-	 team->SetDefaultColors(); // updates field colors live
+	team->SetDefaultColors(); // updates field colors live
 
 	if (log)
 		LOG("Called UpdateColors() for team {}", Format::ToHexString(team));
@@ -516,7 +492,7 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const std::array<FLi
 		LOGERROR("Team's CurrentColorList size ({}) isn't {}", team->CurrentColorList.size(), COLOR_ARRAY_SIZE);
 		return;
 	}
-	
+
 	if (log)
 	{
 		LOG("Finna apply these colors:");
@@ -528,7 +504,6 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const std::array<FLi
 		team->CurrentColorList[i] = colors[i];
 
 	team->UpdateColors(); // updates HUD colors live
-
 
 	// change default colors
 	if (team->DefaultColorList.size() != COLOR_ARRAY_SIZE)
@@ -546,8 +521,7 @@ void TeamsComponent::changeColorLiveInMatch(ATeam_TA* team, const std::array<FLi
 		LOG("Called UpdateColors() for team {}", Format::ToHexString(team));
 }
 
-void TeamsComponent::changeColorLiveOutsideMatch(
-    ATeam_TA* team, const FLinearColor& color, USeqAct_SetStadiumTeamColors_TA* act, bool log)
+void TeamsComponent::changeColorLiveOutsideMatch(ATeam_TA* team, const FLinearColor& color, USeqAct_SetStadiumTeamColors_TA* act, bool log)
 {
 	if (!validUObject(team))
 		return;
@@ -601,7 +575,6 @@ void TeamsComponent::changeColorLiveOutsideMatch(
 	if (log)
 		LOG("Applied colors to {} team [{}]", team->TeamIndex == 0 ? "Blue" : "Orange", Format::ToHexString(team));
 }
-
 
 // ######################################## team names ########################################
 
@@ -721,24 +694,22 @@ UGFxDataStore_X* TeamsComponent::getDatastore()
 	return hud->Shell->DataStore;
 }
 
-
-
 // ##############################################################################################################
 // ##########################################    DISPLAY FUNCTIONS    ###########################################
 // ##############################################################################################################
 
 void TeamsComponent::display()
 {
-	auto blueTeamColor_cvar          = getCvar(Cvars::blue_team_color);
-	auto orangeTeamColor_cvar        = getCvar(Cvars::orange_team_color);
-	auto useCustomTeamNames_cvar     = getCvar(Cvars::use_custom_team_names);
-	auto blueTeamName_cvar           = getCvar(Cvars::blue_team_name);
-	auto orangeTeamName_cvar         = getCvar(Cvars::orange_team_name);
-	auto useCustomTeamColors_cvar    = getCvar(Cvars::use_custom_team_colors);
-	auto useSingleFreeplayColor_cvar = getCvar(Cvars::use_single_freeplay_color);
-	auto singleFreeplayColor_cvar    = getCvar(Cvars::single_freeplay_color);
-	auto useRGBFreeplayColors_cvar   = getCvar(Cvars::use_rgb_freeplay_colors);
-	auto rgbSpeed_cvar               = getCvar(Cvars::rgb_speed);
+	auto blueTeamColor_cvar          = getCvar(Cvars::blueTeamColor);
+	auto orangeTeamColor_cvar        = getCvar(Cvars::orangeTeamColor);
+	auto useCustomTeamNames_cvar     = getCvar(Cvars::useCustomTeamNames);
+	auto blueTeamName_cvar           = getCvar(Cvars::blueTeamName);
+	auto orangeTeamName_cvar         = getCvar(Cvars::orangeTeamName);
+	auto useCustomTeamColors_cvar    = getCvar(Cvars::useCustomTeamColors);
+	auto useSingleFreeplayColor_cvar = getCvar(Cvars::useSingleFreeplayColor);
+	auto singleFreeplayColor_cvar    = getCvar(Cvars::singleFreeplayColor);
+	auto useRGBFreeplayColors_cvar   = getCvar(Cvars::useRgbFreeplayColors);
+	auto rgbSpeed_cvar               = getCvar(Cvars::rgbSpeed);
 
 	if (!blueTeamColor_cvar) // if any is null, they prolly all are...
 		return;
@@ -848,9 +819,7 @@ void TeamsComponent::display()
 
 				if (ImGui::Button("Apply##custom_team_colors"))
 				{
-					GAME_THREAD_EXECUTE(
-					    applyColors();
-					);
+					GAME_THREAD_EXECUTE({ applyColors(); });
 				}
 			}
 
@@ -879,8 +848,8 @@ void TeamsComponent::display()
 							GUI::ScopedID id{i};
 
 							std::string label = std::to_string(i);
-							ImGui::ColorEdit4(label.c_str(), &col.defaultColors[i].R,
-							    ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
+							ImGui::ColorEdit4(
+							    label.c_str(), &col.defaultColors[i].R, ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
 
 							if (i < col.defaultColors.size() - 1)
 								ImGui::SameLine();
@@ -897,8 +866,8 @@ void TeamsComponent::display()
 							GUI::ScopedID id{i};
 
 							std::string label = std::to_string(i);
-							ImGui::ColorEdit4(label.c_str(), &col.currentColors[i].R,
-							    ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
+							ImGui::ColorEdit4(
+							    label.c_str(), &col.currentColors[i].R, ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
 
 							if (i < col.currentColors.size() - 1)
 								ImGui::SameLine();
@@ -982,6 +951,5 @@ void TeamsComponent::display()
 		}
 	}
 }
-
 
 class TeamsComponent Teams{};

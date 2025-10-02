@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "Replays.hpp"
+#include "Cvars.hpp"
 #include "Macros.hpp"
-
 
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-void ReplaysComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void ReplaysComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -16,23 +16,19 @@ void ReplaysComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
 	findMapNames();
 }
 
-void ReplaysComponent::initCvars()
-{
-	registerCvar_bool(Cvars::use_alt_replay_map_switch, false).bindTo(m_useAltMapSwitchMethod);
-}
+void ReplaysComponent::initCvars() { registerCvar_bool(Cvars::useAltReplayMapSwitch, false).bindTo(m_useAltMapSwitchMethod); }
 
 void ReplaysComponent::initCommands()
 {
-	registerCommand(Commands::change_replay_map, [this](std::vector<std::string> args)
-	{
-		if (args.size() < 2)
-			return;
+	registerCommand(Commands::changeReplayMap,
+	    [this](std::vector<std::string> args)
+	    {
+		    if (args.size() < 2)
+			    return;
 
-		changeMap(args[1]);
-	});
+		    changeMap(args[1]);
+	    });
 }
-
-
 
 // ##############################################################################################################
 // ###############################################    FUNCTIONS    ##############################################
@@ -45,7 +41,7 @@ void ReplaysComponent::changeMap(const std::string& mapName)
 
 	UReplayManager_TA* man = UReplayManager_TA::GetInstance();
 	if (!validUObject(man))
-	{ 
+	{
 		LOGERROR("UReplayManager_TA* from UReplayManager_TA::GetInstance() is invalid");
 		return;
 	}
@@ -134,15 +130,13 @@ void ReplaysComponent::storeCurrentMapName()
 	m_dropdownPreviewIndex = 0;
 }
 
-
-
 // ##############################################################################################################
 // ###########################################    DISPLAY FUNCTIONS    ##########################################
 // ##############################################################################################################
 
 void ReplaysComponent::display()
 {
-	auto useAltReplayMapSwitch_cvar = getCvar(Cvars::use_alt_replay_map_switch);
+	auto useAltReplayMapSwitch_cvar = getCvar(Cvars::useAltReplayMapSwitch);
 	if (!useAltReplayMapSwitch_cvar)
 		return;
 
@@ -162,9 +156,7 @@ void ReplaysComponent::display()
 
 	if (ImGui::Button("Update map names"))
 	{
-		GAME_THREAD_EXECUTE(
-			findMapNames();
-		);
+		GAME_THREAD_EXECUTE({ findMapNames(); });
 	}
 }
 
@@ -189,7 +181,7 @@ void ReplaysComponent::display_mapsDropdown()
 		const std::string searchQueryLower = Format::ToLower(searchBuffer);
 
 		const std::string_view searchView{searchBuffer};
-		const bool hasSearch = !searchView.empty();
+		const bool             hasSearch = !searchView.empty();
 
 		for (int i = 0; i < m_mapNames.size(); ++i)
 		{
@@ -204,15 +196,12 @@ void ReplaysComponent::display_mapsDropdown()
 
 			if (ImGui::Selectable(mapNameStr.c_str(), m_dropdownPreviewIndex == i))
 			{
-				GAME_THREAD_EXECUTE_CAPTURE(
-					changeMap(internalMapNameStr);
-				, internalMapNameStr);
+				GAME_THREAD_EXECUTE({ changeMap(internalMapNameStr); }, internalMapNameStr);
 			}
 		}
 
 		ImGui::EndCombo();
 	}
 }
-
 
 class ReplaysComponent Replays{};

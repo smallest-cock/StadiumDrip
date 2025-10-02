@@ -4,18 +4,15 @@
 #include <bakkesmod/plugin/bakkesmodplugin.h>
 #include <bakkesmod/plugin/pluginwindow.h>
 #include <bakkesmod/plugin/PluginSettingsWindow.h>
+
 #include "Cvars.hpp"
 
-
-constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
-constexpr auto short_plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
+constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(
+    VERSION_BUILD);
+constexpr auto short_plugin_version  = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
 constexpr auto pretty_plugin_version = "v" stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH);
 
-
-class StadiumDrip:
-	public BakkesMod::Plugin::BakkesModPlugin,
-	public SettingsWindowBase,
-	public PluginWindowBase
+class StadiumDrip : public BakkesMod::Plugin::BakkesModPlugin, public SettingsWindowBase, public PluginWindowBase
 {
 private:
 	void onLoad() override;
@@ -33,7 +30,7 @@ private:
 	CVarWrapper registerCvar_String(const CvarData& cvar, const std::string& startingValue);
 	CVarWrapper registerCvar_Number(const CvarData& cvar, float startingValue, bool hasMinMax = false, float min = 0, float max = 0);
 	CVarWrapper registerCvar_Color(const CvarData& cvar, const std::string& startingValue);
-	void registerCommand(const CvarData& cvar, std::function<void(std::vector<std::string>)> callback);
+	void        registerCommand(const CvarData& cvar, std::function<void(std::vector<std::string>)> callback);
 	CVarWrapper getCvar(const CvarData& cvar);
 
 	void hookEvent(const char* funcName, std::function<void(std::string)> callback);
@@ -45,11 +42,7 @@ private:
 	void autoRunCommand(const CvarData& autoRunBool, const CvarData& command, float delaySeconds = 0.0f);
 	void runCommandInterval(const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand = false);
 	void autoRunCommandInterval(
-		const CvarData& autoRunBool,
-		const CvarData& command,
-		int numIntervals,
-		float delaySeconds,
-		bool delayFirstCommand = false);
+	    const CvarData& autoRunBool, const CvarData& command, int numIntervals, float delaySeconds, bool delayFirstCommand = false);
 
 private:
 	// flags
@@ -65,6 +58,5 @@ public:
 	void Misc_Tab();
 
 	// header/footer stuff
-	static constexpr float header_height =					80.0f;
-	static constexpr float footer_height =					40.0f;
+	static constexpr float FOOTER_HEIGHT = 40.0f;
 };

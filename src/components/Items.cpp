@@ -6,7 +6,7 @@
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-void ItemsComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void ItemsComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -195,9 +195,6 @@ uint64_t ItemsComponent::getTimestampLong()
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-void ItemsComponent::spawnBallInFreeplay()
-{
-	spawnInFreeplay<ABall_TA>({500, 500, 500});
-}
+void ItemsComponent::spawnBallInFreeplay() { spawnInFreeplay<ABall_TA>({500, 500, 500}); }
 
 class ItemsComponent Items{};

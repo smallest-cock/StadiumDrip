@@ -1,3 +1,4 @@
+#include "Cvars.hpp"
 #include "pch.h"
 #include "MainMenu.hpp"
 #include "Events.hpp"
@@ -7,8 +8,7 @@
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-// clang-format off
-void MainMenuComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void MainMenuComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -18,20 +18,19 @@ void MainMenuComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
 	initMainMenuBgMapIds();
 
 	// wait til cvars are loaded (1s), then update selected_bg_dropdown_index
-	gameWrapper->SetTimeout([this](GameWrapper* gw)
-	{
-		EMainMenuBackground bg_id            = static_cast<EMainMenuBackground>(*m_bgIndex);
-		std::string         selected_bg_name = m_reversedWorkingMMBGIds[bg_id];
+	DELAY(1.0f, {
+		EMainMenuBackground bgId           = static_cast<EMainMenuBackground>(*m_bgIndex);
+		std::string         selectedBgName = m_reversedWorkingMMBGIds[bgId];
 
 		for (int i = 0; i < m_bgDropdownNames.size(); ++i)
 		{
-			if (m_bgDropdownNames[i] == selected_bg_name)
+			if (m_bgDropdownNames[i] == selectedBgName)
 			{
 				m_selectedBgDropdownIndex = i;
 				break;
 			}
 		}
-	}, 1.0f);
+	});
 }
 
 void MainMenuComponent::initHooks()
@@ -48,93 +47,96 @@ void MainMenuComponent::initHooks()
 	hookEventPost(Events::GFxData_MainMenu_TA_OnEnteredMainMenu, applyCamSettings);
 	hookEventPost(Events::GFxData_MainMenu_TA_MainMenuAdded, applyCamSettings);
 
-	hookWithCallerPost(Events::GFxData_MainMenu_TA_OnRotatePreviewFinished, [this](ActorWrapper Caller, ...)
-	{
-		auto* caller = reinterpret_cast<UGFxData_MainMenu_TA*>(Caller.memory_address);
-		if (!validUObject(caller))
-			return;
+	hookWithCallerPost(Events::GFxData_MainMenu_TA_OnRotatePreviewFinished,
+	    [this](ActorWrapper Caller, ...)
+	    {
+		    auto* caller = reinterpret_cast<UGFxData_MainMenu_TA*>(Caller.memory_address);
+		    if (!validUObject(caller))
+			    return;
 
-		auto* shell = caller->Shell;
-		if (!validUObject(shell))
-			return;
+		    auto* shell = caller->Shell;
+		    if (!validUObject(shell))
+			    return;
 
-		if (!shell->Player || !shell->Player->Actor || !shell->Player->Actor->PlayerCamera || !shell->Player->Actor->PlayerCamera->IsA<ACamera_MainMenu_TA>())
-			return;
+		    if (!shell->Player || !shell->Player->Actor || !shell->Player->Actor->PlayerCamera ||
+		        !shell->Player->Actor->PlayerCamera->IsA<ACamera_MainMenu_TA>())
+			    return;
 
-		auto* cam = static_cast<ACamera_MainMenu_TA*>(shell->Player->Actor->PlayerCamera);
-		if (!cam->CurrentState || !cam->CurrentState->IsA<UCameraState_CarPreview_TA>())
-			return;
+		    auto* cam = static_cast<ACamera_MainMenu_TA*>(shell->Player->Actor->PlayerCamera);
+		    if (!cam->CurrentState || !cam->CurrentState->IsA<UCameraState_CarPreview_TA>())
+			    return;
 
-		auto* camState = static_cast<UCameraState_CarPreview_TA*>(cam->CurrentState);
-		FRotator& rot = camState->RotationOffset;
+		    auto*     camState = static_cast<UCameraState_CarPreview_TA*>(cam->CurrentState);
+		    FRotator& rot      = camState->RotationOffset;
 
-		auto mm_cam_rotation_pitch_cvar =	getCvar(Cvars::mm_cam_rotation_pitch);
-		auto mm_cam_rotation_yaw_cvar =		getCvar(Cvars::mm_cam_rotation_yaw);
-		if (!mm_cam_rotation_pitch_cvar)
-			return;
+		    auto mainMenuCamRotationPitch_cvar = getCvar(Cvars::mainMenuCamRotationPitch);
+		    auto mainMenuCamRotationYaw_cvar   = getCvar(Cvars::mainMenuCamRotationYaw);
+		    if (!mainMenuCamRotationPitch_cvar)
+			    return;
 
-		mm_cam_rotation_pitch_cvar.setValue(rot.Pitch);
-		mm_cam_rotation_yaw_cvar.setValue(rot.Yaw);
+		    mainMenuCamRotationPitch_cvar.setValue(rot.Pitch);
+		    mainMenuCamRotationYaw_cvar.setValue(rot.Yaw);
 
-		_globalCvarManager->executeCommand("writeconfig", false); // write cvar values to file (bc we arent using the auto "writeconfig" when user closes settings menu)
+		    // write cvar values to file (bc we arent using the auto "writeconfig" when user closes settings menu)
+		    _globalCvarManager->executeCommand("writeconfig", false);
 
-		LOG("Updated camera rotation cvars: Pitch:{} - Yaw:{} - Roll:{}", rot.Pitch, rot.Yaw, rot.Roll);
-	});
-	
-	hookWithCallerPost(Events::PremiumGaragePreviewSet_TA_EnterPremiumGarage,[this](ActorWrapper Caller, ...)
-	{
-		auto premGarage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(Caller.memory_address);
-		restoreTurntableToPremiumGarage(premGarage);
-	});
-	
-	hookWithCallerPost(Events::PremiumGaragePreviewSet_TA_ExitPremiumGarage,[this](ActorWrapper Caller, ...)
-	{
-		auto premGarage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(Caller.memory_address);
-		restoreTurntableToMainmenu(premGarage);
-	});
+		    LOG("Updated camera rotation cvars: Pitch:{} - Yaw:{} - Roll:{}", rot.Pitch, rot.Yaw, rot.Roll);
+	    });
+
+	hookWithCallerPost(Events::PremiumGaragePreviewSet_TA_EnterPremiumGarage,
+	    [this](ActorWrapper Caller, ...)
+	    {
+		    auto* premGarage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(Caller.memory_address);
+		    restoreTurntableToPremiumGarage(premGarage);
+	    });
+
+	hookWithCallerPost(Events::PremiumGaragePreviewSet_TA_ExitPremiumGarage,
+	    [this](ActorWrapper Caller, ...)
+	    {
+		    auto* premGarage = reinterpret_cast<UPremiumGaragePreviewSet_TA*>(Caller.memory_address);
+		    restoreTurntableToMainmenu(premGarage);
+	    });
 }
 
 void MainMenuComponent::initCvars()
 {
 	// bools
-	registerCvar_bool(Cvars::use_custom_mm_location, false).bindTo(m_useCustomLocation);
-	registerCvar_bool(Cvars::remember_mm_camera_rotation, true).bindTo(m_rememberCamRotation);
+	registerCvar_bool(Cvars::useCustomMainMenuLocation, false).bindTo(m_useCustomLocation);
+	registerCvar_bool(Cvars::preserveMainMenuCameraRotation, true).bindTo(m_preserveCamRotation);
 
 	// floats
-	registerCvar_number(Cvars::main_menu_X, DEFAULT_CAR_X).bindTo(m_carLocationX);
-	registerCvar_number(Cvars::main_menu_Y, DEFAULT_CAR_Y).bindTo(m_carLocationY);
-	registerCvar_number(Cvars::main_menu_Z, DEFAULT_CAR_Z).bindTo(m_carLocationZ);
-	registerCvar_number(Cvars::custom_fov, DEFAULT_FOV, true, 1, 170).bindTo(m_customFOV);
+	registerCvar_number(Cvars::mainMenuX, DEFAULT_CAR_X).bindTo(m_carLocationX);
+	registerCvar_number(Cvars::mainMenuY, DEFAULT_CAR_Y).bindTo(m_carLocationY);
+	registerCvar_number(Cvars::mainMenuZ, DEFAULT_CAR_Z).bindTo(m_carLocationZ);
+	registerCvar_number(Cvars::customFov, DEFAULT_FOV, true, 1, 170).bindTo(m_customFOV);
 
 	// ints
-	registerCvar_number(Cvars::mm_bg_index, 26, true, 0, 100).bindTo(m_bgIndex);
-	registerCvar_number(Cvars::mm_cam_rotation_pitch, -700).bindTo(m_camRotationPitch);
-	registerCvar_number(Cvars::mm_cam_rotation_yaw, 0).bindTo(m_camRotationYaw);
+	registerCvar_number(Cvars::mainMenuBgIdx, 26, true, 0, 100).bindTo(m_bgIndex);
+	registerCvar_number(Cvars::mainMenuCamRotationPitch, -700).bindTo(m_camRotationPitch);
+	registerCvar_number(Cvars::mainMenuCamRotationYaw, 0).bindTo(m_camRotationYaw);
 }
 
 void MainMenuComponent::initCommands()
 {
-	registerCommand(Commands::change_mainmenu_bg, [this](std::vector<std::string> args)
-	{
-		if (args.size() < 2)
-		{
-			LOG("Usage:\tchange_mainmenu_bg <background_id_num>");
-			return;
-		}
+	registerCommand(Commands::changeMainMenuBg,
+	    [this](std::vector<std::string> args)
+	    {
+		    if (args.size() < 2)
+		    {
+			    LOG("Usage:\tchange_mainmenu_bg <background_id_num>");
+			    return;
+		    }
 
-		int int_id = std::stoi(args[1]);
-		if (int_id < 0 || int_id > 255)
-			return;
+		    int int_id = std::stoi(args[1]);
+		    if (int_id < 0 || int_id > 255)
+			    return;
 
-		EMainMenuBackground bg_id = static_cast<EMainMenuBackground>(int_id);
-		setBackground(bg_id, true);
+		    EMainMenuBackground bg_id = static_cast<EMainMenuBackground>(int_id);
+		    setBackground(bg_id, true);
 
-		DELAY(1.0f,
-			runCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
-		);
-	});
+		    DELAY(1.0f, { runCommandInterval(Commands::applyAdTexture, 3, 1.0f, true); });
+	    });
 }
-// clang-format off
 
 void MainMenuComponent::initMainMenuBgMapIds()
 {
@@ -147,8 +149,6 @@ void MainMenuComponent::initMainMenuBgMapIds()
 		m_reversedWorkingMMBGIds[value] = key;
 }
 
-
-
 // ##############################################################################################################
 // ###############################################    FUNCTIONS    ##############################################
 // ##############################################################################################################
@@ -159,7 +159,7 @@ void MainMenuComponent::applyCustomCamSettings()
 	setCameraFOV(*m_customFOV);
 
 	// saved rotation
-	if (*m_rememberCamRotation)
+	if (*m_preserveCamRotation)
 		setCameraRotation({*m_camRotationPitch, *m_camRotationYaw, 420});
 
 	// custom location
@@ -195,8 +195,8 @@ void MainMenuComponent::setCameraRotation(const FRotator& rot, UCameraState_CarP
 		camState = static_cast<UCameraState_CarPreview_TA*>(cam->CurrentState);
 	}
 
-	camState->RotationOffset.Pitch =	rot.Pitch;
-	camState->RotationOffset.Yaw  =	rot.Yaw;
+	camState->RotationOffset.Pitch = rot.Pitch;
+	camState->RotationOffset.Yaw   = rot.Yaw;
 
 	if (log)
 		LOG("Set camera rotation: Pitch:{} - Yaw:{} - Roll: {}", rot.Pitch, rot.Yaw, rot.Roll);
@@ -222,7 +222,7 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 		return;
 
 	//// clear any old cars?
-	//premGarage->CarPreviewActors.clear();
+	// premGarage->CarPreviewActors.clear();
 
 	// just make them hidden instead, so they aint yeeted and gone when user to goes to premium garage
 	LOG("num ACarPreviewActor_TA* in premGarage->CarPreviewActors: {}", premGarage->CarPreviewActors.size());
@@ -241,10 +241,8 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 	// - X coordinate is above 3900 or below -3900
 	// - Y coordinate is above 5000 or below -5000
 	// - Z coordinate is above 0 or below -5 (ground level is about -1.5 units)
-	if (
-		newLocation.X < -3900	|| newLocation.X > 3900 ||
-		newLocation.Y < -5000	|| newLocation.Y > 5000 ||
-		newLocation.Z < -5		|| newLocation.Z > 0)
+	if (newLocation.X < -3900 || newLocation.X > 3900 || newLocation.Y < -5000 || newLocation.Y > 5000 || newLocation.Z < -5 ||
+	    newLocation.Z > 0)
 	{
 		// set turntable location
 		turntable->SetHidden(false); // unhide turntable
@@ -255,17 +253,17 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 		DEBUGLOG("Binded turntable to local player car");
 
 		// turntable is an extra 6 units off the ground compared to car, so raise car up 6 units to compensate & avoid clipping
-		FVector newCarLocation = { newLocation.X, newLocation.Y, newLocation.Z + 6 };
-		
+		FVector newCarLocation = {newLocation.X, newLocation.Y, newLocation.Z + 6};
+
 		previewActor->SetLocation(newCarLocation); // set car location
 	}
 	else
 	{
-		turntable->SetHidden(true); // hide turntable
+		turntable->SetHidden(true);             // hide turntable
 		previewActor->SetLocation(newLocation); // set car location
 	}
 
-	m_mmTurntableLocation = newLocation;	// update state
+	m_mmTurntableLocation = newLocation; // update state
 
 	if (log)
 		LOG("Set main menu location to X:{} - Y:{} - Z:{}", newLocation.X, newLocation.Y, newLocation.Z);
@@ -297,33 +295,32 @@ void MainMenuComponent::setCameraFOV(float newFOV, bool log)
 	}
 
 	cam->bLockedFOV = false;
-	cam->bEditable = true;
+	cam->bEditable  = true;
 
 	cam->DefaultFOV = newFOV;
-	cam->LockedFOV = newFOV;
+	cam->LockedFOV  = newFOV;
 	cam->SetFOV(newFOV);
 
 	if (log)
 		LOG("Set FOV to: {}", newFOV);
 
-
 	//// only seems to work in main menu and freeplay...
-	//ACamera_X* cam = Instances.GetInstanceOf<ACamera_X>();
-	//if (!cam) {
+	// ACamera_X* cam = Instances.GetInstanceOf<ACamera_X>();
+	// if (!cam) {
 	//	LOG("ACamera_X* is null");
 	//	return;
-	//}
+	// }
 
-	//cam->bLockedFOV = false;
-	//cam->bEditable = true;
+	// cam->bLockedFOV = false;
+	// cam->bEditable = true;
 
-	//cam->DefaultFOV = newFOV;
-	//cam->LockedFOV = newFOV;
-	//cam->SetFOV(newFOV);
+	// cam->DefaultFOV = newFOV;
+	// cam->LockedFOV = newFOV;
+	// cam->SetFOV(newFOV);
 
-	//if (log) {
+	// if (log) {
 	//	LOG("Set FOV to: {}", newFOV);
-	//}
+	// }
 }
 
 void MainMenuComponent::resetCameraFOV(bool log)
@@ -378,7 +375,7 @@ void MainMenuComponent::setBackground(EMainMenuBackground backgroundID, bool log
 	LOG("config->MainMenuBG (previous bg): {}", static_cast<uint8_t>(previousBG));
 	LOG("config->CurrentActiveSeason: {}", config->CurrentActiveSeason);
 
-	//config->CurrentActiveSeason = std::stoi(args[2]);		// can also set active season, if we ever wanna do that
+	// config->CurrentActiveSeason = std::stoi(args[2]);		// can also set active season, if we ever wanna do that
 	config->MainMenuBG = backgroundID;
 	config->Apply();
 	config->__MainMenuBG__ChangeNotifyFunc();
@@ -398,7 +395,7 @@ void MainMenuComponent::setBackground(EMainMenuBackground backgroundID, bool log
 	mainMenuSwitched->eventToggled();
 
 	if (!m_aMapHasLoaded)
-		runCommand(Commands::exit_to_main_menu);
+		runCommand(Commands::exitToMainMenu);
 
 	if (log)
 		LOG("Set new main menu background... ID: {}", static_cast<uint8_t>(backgroundID));
@@ -418,7 +415,7 @@ void MainMenuComponent::restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet
 
 	ACarPreviewActor_TA* preview_actor = premGarage->CurrentCar;
 	if (!validUObject(preview_actor))
-	{ 
+	{
 		LOG("[ERROR] ACarPreviewActor_TA* is null");
 		return;
 	}
@@ -431,23 +428,28 @@ void MainMenuComponent::restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet
 		return;
 	}
 
-	turntable->SetHidden(false);	// unhide turntable if hidden	
+	turntable->SetHidden(false); // unhide turntable if hidden
 	turntable->SetLocation(default_turntable_location);
 	LOG("Set turntable location..... X:{} - Y:{} - Z:{}",
-		default_turntable_location.X, default_turntable_location.Y, default_turntable_location.Z);
+	    default_turntable_location.X,
+	    default_turntable_location.Y,
+	    default_turntable_location.Z);
 
 	// ig the stuff below needs to be executed AFTER the post hook callback. Or maybe just needs a lil delay which gw->Execute provides?
-	gameWrapper->Execute([this, preview_actor](GameWrapper* gw)
-	{
-		preview_actor->SetHidden(false);
+	gameWrapper->Execute(
+	    [this, preview_actor](GameWrapper* gw)
+	    {
+		    preview_actor->SetHidden(false);
 
-		preview_actor->SetLocation(default_premium_garage_car_location);
-		LOG("(from the callback) Set premium garage car preview actor location..... X:{} - Y:{} - Z:{}",
-			default_premium_garage_car_location.X, default_premium_garage_car_location.Y, default_premium_garage_car_location.Z);
+		    preview_actor->SetLocation(default_premium_garage_car_location);
+		    LOG("(from the callback) Set premium garage car preview actor location..... X:{} - Y:{} - Z:{}",
+		        default_premium_garage_car_location.X,
+		        default_premium_garage_car_location.Y,
+		        default_premium_garage_car_location.Z);
 
-		preview_actor->ApplyTurntableBase();
-		LOG("AppliedTurntableBase");
-	});
+		    preview_actor->ApplyTurntableBase();
+		    LOG("AppliedTurntableBase");
+	    });
 }
 
 void MainMenuComponent::restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* premGarage)
@@ -461,7 +463,7 @@ void MainMenuComponent::restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* 
 			return;
 		}
 	}
-	
+
 	// hide the premium garage cars
 	for (ACarPreviewActor_TA* car : premGarage->CarPreviewActors)
 	{
@@ -477,22 +479,18 @@ void MainMenuComponent::restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* 
 		return;
 	}
 
-	if (
-		m_mmTurntableLocation.X < -3900 || m_mmTurntableLocation.X > 3900 ||
-		m_mmTurntableLocation.Y < -5000 || m_mmTurntableLocation.Y > 5000 ||
-		m_mmTurntableLocation.Z < -5 || m_mmTurntableLocation.Z > 0)
+	if (m_mmTurntableLocation.X < -3900 || m_mmTurntableLocation.X > 3900 || m_mmTurntableLocation.Y < -5000 ||
+	    m_mmTurntableLocation.Y > 5000 || m_mmTurntableLocation.Z < -5 || m_mmTurntableLocation.Z > 0)
 	{
 		// set turntable location
-		turntable->SetHidden(false);		// unhide
+		turntable->SetHidden(false); // unhide
 		turntable->SetLocation(m_mmTurntableLocation);
 	}
 	else
 	{
-		turntable->SetHidden(true);			// hide
+		turntable->SetHidden(true); // hide
 	}
 }
-
-
 
 // ##############################################################################################################
 // ##########################################    DISPLAY FUNCTIONS    ###########################################
@@ -500,25 +498,25 @@ void MainMenuComponent::restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* 
 
 void MainMenuComponent::display()
 {
-	auto useCustomMainMenuLoc_cvar        = getCvar(Cvars::use_custom_mm_location);
-	auto mainMenuX_cvar                   = getCvar(Cvars::main_menu_X);
-	auto mainMenuY_cvar                   = getCvar(Cvars::main_menu_Y);
-	auto mainMenuZ_cvar                   = getCvar(Cvars::main_menu_Z);
-	auto customFOV_cvar                   = getCvar(Cvars::custom_fov);
-	auto remember_mm_camera_rotation_cvar = getCvar(Cvars::remember_mm_camera_rotation);
-	if (!useCustomMainMenuLoc_cvar)
+	auto useCustomMainMenuLocation_cvar      = getCvar(Cvars::useCustomMainMenuLocation);
+	auto mainMenuX_cvar                      = getCvar(Cvars::mainMenuX);
+	auto mainMenuY_cvar                      = getCvar(Cvars::mainMenuY);
+	auto mainMenuZ_cvar                      = getCvar(Cvars::mainMenuZ);
+	auto customFOV_cvar                      = getCvar(Cvars::customFov);
+	auto preserveMainMenuCameraRotation_cvar = getCvar(Cvars::preserveMainMenuCameraRotation);
+	if (!useCustomMainMenuLocation_cvar)
 		return;
 
 	const float mm_location_height = ImGui::GetContentRegionAvail().y * 0.6f;
 	{
 		GUI::ScopedChild c{"mainMenuLocation", ImVec2(0, mm_location_height), true};
-	
+
 		GUI::Spacing(2);
 
 		// enable custom team names checkbox
-		bool useCustomMainMenuLoc = useCustomMainMenuLoc_cvar.getBoolValue();
+		bool useCustomMainMenuLoc = useCustomMainMenuLocation_cvar.getBoolValue();
 		if (ImGui::Checkbox("Custom location", &useCustomMainMenuLoc))
-			useCustomMainMenuLoc_cvar.setValue(useCustomMainMenuLoc);
+			useCustomMainMenuLocation_cvar.setValue(useCustomMainMenuLoc);
 
 		if (useCustomMainMenuLoc)
 		{
@@ -560,9 +558,7 @@ void MainMenuComponent::display()
 			{
 				FVector newLocation = {mainMenuX, mainMenuY, mainMenuZ};
 
-				GAME_THREAD_EXECUTE_CAPTURE(
-					setLocation(newLocation);
-				, newLocation);
+				GAME_THREAD_EXECUTE({ setLocation(newLocation); }, newLocation);
 			}
 
 			GUI::SameLineSpacing_relative(25);
@@ -574,7 +570,7 @@ void MainMenuComponent::display()
 				mainMenuY_cvar.setValue(DEFAULT_CAR_Y);
 				mainMenuZ_cvar.setValue(DEFAULT_CAR_Z);
 
-				GAME_THREAD_EXECUTE(resetLocation(true););
+				GAME_THREAD_EXECUTE({ resetLocation(true); });
 			}
 		}
 	}
@@ -582,9 +578,9 @@ void MainMenuComponent::display()
 	{
 		GUI::ScopedChild c{"customFOV", ImGui::GetContentRegionAvail(), true};
 
-		bool remember_mm_camera_rotation = remember_mm_camera_rotation_cvar.getBoolValue();
+		bool remember_mm_camera_rotation = preserveMainMenuCameraRotation_cvar.getBoolValue();
 		if (ImGui::Checkbox("Remember camera rotation", &remember_mm_camera_rotation))
-			remember_mm_camera_rotation_cvar.setValue(remember_mm_camera_rotation);
+			preserveMainMenuCameraRotation_cvar.setValue(remember_mm_camera_rotation);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Rotation will only be saved if you use the mouse to rotate... not a controller stick\n\nbecause Psyonix");
 
@@ -596,9 +592,7 @@ void MainMenuComponent::display()
 			customFOV_cvar.setValue(customFOV);
 
 			// TODO: move to a cvar callback function
-			GAME_THREAD_EXECUTE_CAPTURE(
-				setCameraFOV(customFOV);
-			, customFOV);
+			GAME_THREAD_EXECUTE({ setCameraFOV(customFOV); }, customFOV);
 		}
 
 		GUI::SameLineSpacing_relative(25);
@@ -608,9 +602,7 @@ void MainMenuComponent::display()
 			// reset cvar values
 			customFOV_cvar.setValue(DEFAULT_FOV);
 
-			GAME_THREAD_EXECUTE(
-				resetCameraFOV(true);
-			);
+			GAME_THREAD_EXECUTE({ resetCameraFOV(true); });
 		}
 
 		GUI::Spacing(2);
@@ -630,8 +622,8 @@ void MainMenuComponent::display_bgDropdown()
 	char               searchBuffer[128] = ""; // Buffer for the search input
 	const std::string& selectedBgName    = m_bgDropdownNames[m_selectedBgDropdownIndex];
 
-	if (ImGui::BeginSearchableCombo("Background##backgroundsDropdown",
-		selectedBgName.c_str(), searchBuffer, sizeof(searchBuffer), "search..."))
+	if (ImGui::BeginSearchableCombo(
+	        "Background##backgroundsDropdown", selectedBgName.c_str(), searchBuffer, sizeof(searchBuffer), "search..."))
 	{
 		std::string searchQueryLower = Format::ToLower(searchBuffer); // convert search text to lower
 
@@ -639,10 +631,10 @@ void MainMenuComponent::display_bgDropdown()
 		{
 			GUI::ScopedID id{i};
 
-			std::string& bgName = m_bgDropdownNames[i];
-			std::string bgNameLower = Format::ToLower(bgName);
+			std::string& bgName      = m_bgDropdownNames[i];
+			std::string  bgNameLower = Format::ToLower(bgName);
 
-			if (searchBuffer != "") // filter results if necessary
+			if (!searchQueryLower.empty()) // filter results if necessary
 			{
 				if (bgNameLower.find(searchQueryLower) != std::string::npos)
 				{
@@ -650,15 +642,13 @@ void MainMenuComponent::display_bgDropdown()
 					{
 						m_selectedBgDropdownIndex = i;
 
-						GAME_THREAD_EXECUTE(
+						GAME_THREAD_EXECUTE({
 							if (!isInMainMenu())
 								return;
-							
+
 							setBackground(getSelectedBackground(), true);
-						    DELAY(1.0f,
-								runCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
-							);
-						);
+							DELAY(1.0f, { runCommandInterval(Commands::applyAdTexture, 3, 1.0f, true); });
+						});
 					}
 				}
 			}
@@ -668,15 +658,13 @@ void MainMenuComponent::display_bgDropdown()
 				{
 					m_selectedBgDropdownIndex = i;
 
-					GAME_THREAD_EXECUTE(
+					GAME_THREAD_EXECUTE({
 						if (!isInMainMenu())
 							return;
-						
+
 						setBackground(getSelectedBackground(), true);
-					    DELAY(1.0f,
-							runCommandInterval(Commands::apply_ad_texture, 3, 1.0f, true);
-						);
-					);
+						DELAY(1.0f, { runCommandInterval(Commands::applyAdTexture, 3, 1.0f, true); });
+					});
 				}
 			}
 		}
@@ -685,5 +673,4 @@ void MainMenuComponent::display_bgDropdown()
 	}
 }
 
-
-class MainMenuComponent Mainmenu {};
+class MainMenuComponent Mainmenu{};

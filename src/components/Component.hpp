@@ -1,8 +1,6 @@
 #pragma once
 #include "Cvars.hpp"
-#include "components/Instances.hpp"
 #include <ModUtils/wrappers/GFxWrapper.hpp>
-
 
 enum class EGameStates : uint8_t
 {
@@ -39,30 +37,26 @@ enum class EMatchType : uint8_t
 	Unknown
 };
 
-
-template <typename Derived>
-class Component
+template <typename Derived> class Component
 {
-private:
-
-public:
+protected:
 	std::shared_ptr<GameWrapper> gameWrapper;
 
 	// logging
 	template <typename... Args>
-	static void LOG(std::string_view format_str, Args&&... args)	// overload LOG function to add component name prefix
+	static void LOG(std::string_view format_str, Args&&... args) // overload LOG function to add component name prefix
 	{
 		std::string strWithComponentName = std::format("[{}] {}", Derived::componentName, format_str);
-		::LOG(std::vformat(strWithComponentName, std::make_format_args(args...)));
+		::LOG(strWithComponentName, std::forward<Args>(args)...);
 	}
 
 	template <typename... Args>
 	static void LOGERROR(std::string_view format_str, Args&&... args) // overload LOG function to add component name prefix
 	{
 		std::string strWithComponentName = std::format("[{}] ERROR: {}", Derived::componentName, format_str);
-		::LOG(std::vformat(strWithComponentName, std::make_format_args(args...)));
+		::LOG(strWithComponentName, std::forward<Args>(args)...);
 	}
-	
+
 	// hooks
 	void hookEvent(const char* funcName, std::function<void(std::string eventName)> callback)
 	{
@@ -81,8 +75,9 @@ public:
 		gameWrapper->HookEventWithCaller<ActorWrapper>(function_name, callback);
 		LOG("Hooked function pre: \"{}\"", function_name);
 	}
-	
-	void hookWithCallerPost(const char* function_name, std::function<void(ActorWrapper Caller, void* Params, std::string eventName)> callback)
+
+	void hookWithCallerPost(
+	    const char* function_name, std::function<void(ActorWrapper Caller, void* Params, std::string eventName)> callback)
 	{
 		gameWrapper->HookEventWithCallerPost<ActorWrapper>(function_name, callback);
 		LOG("Hooked function post: \"{}\"", function_name);
@@ -107,7 +102,8 @@ public:
 		return _globalCvarManager->registerCvar(cvar.name, startingValue, cvar.description);
 	}
 
-	CVarWrapper registerCvar_number(const CvarData& cvar, float startingValue, bool hasMinMax = false, float min = 0.0f, float max = 0.0f, bool log = true)
+	CVarWrapper registerCvar_number(
+	    const CvarData& cvar, float startingValue, bool hasMinMax = false, float min = 0.0f, float max = 0.0f, bool log = true)
 	{
 		std::string numberStr = std::to_string(startingValue);
 
@@ -198,15 +194,9 @@ public:
 			return EGameStates::Menu;
 	}
 
-	bool isInMatchOrReplay()
-	{
-		return gameWrapper->IsInReplay() || gameWrapper->IsInOnlineGame() || gameWrapper->IsInGame();
-	}
+	bool isInMatchOrReplay() { return gameWrapper->IsInReplay() || gameWrapper->IsInOnlineGame() || gameWrapper->IsInGame(); }
 
-	bool isInMatch()
-	{
-		return !gameWrapper->IsInReplay() && (gameWrapper->IsInOnlineGame() || gameWrapper->IsInGame());
-	}
+	bool isInMatch() { return !gameWrapper->IsInReplay() && (gameWrapper->IsInOnlineGame() || gameWrapper->IsInGame()); }
 
 	EMatchType getMatchType(UMatchType_TA* matchType)
 	{

@@ -1,8 +1,9 @@
+#include "Cvars.hpp"
 #include "pch.h"
 #include "Textures.hpp"
+#include "Messages.hpp"
 #include "Macros.hpp"
 #include "Events.hpp"
-
 
 using namespace Files;
 
@@ -100,7 +101,7 @@ void MICData::display(const std::string& micName, std::shared_ptr<GameWrapper>& 
 {
 	if (ImGui::Checkbox("Customize", &customization_enabled))
 	{
-		GAME_THREAD_EXECUTE(Textures.writeMicCustomizationsToJson(););
+		GAME_THREAD_EXECUTE({ Textures.writeMicCustomizationsToJson(); });
 	}
 
 	GUI::SameLineSpacing_relative(10);
@@ -115,7 +116,7 @@ void MICData::display(const std::string& micName, std::shared_ptr<GameWrapper>& 
 
 			if (ImGui::Checkbox("Customize", &paramData.customization_enabled))
 			{
-				GAME_THREAD_EXECUTE(Textures.writeMicCustomizationsToJson(););
+				GAME_THREAD_EXECUTE({ Textures.writeMicCustomizationsToJson(); });
 			}
 
 			GUI::SameLineSpacing_relative(10);
@@ -128,7 +129,7 @@ void MICData::display(const std::string& micName, std::shared_ptr<GameWrapper>& 
 
 			if (ImGui::Button("Refresh"))
 			{
-				GAME_THREAD_EXECUTE(Textures.findAvailableAdImages(););
+				GAME_THREAD_EXECUTE({ Textures.findAvailableAdImages(); });
 			}
 		}
 
@@ -136,13 +137,11 @@ void MICData::display(const std::string& micName, std::shared_ptr<GameWrapper>& 
 	}
 }
 
-
-
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
 // ##############################################################################################################
 
-void TexturesComponent::Initialize(const std::shared_ptr<GameWrapper>& gw)
+void TexturesComponent::init(const std::shared_ptr<GameWrapper>& gw)
 {
 	gameWrapper = gw;
 
@@ -182,50 +181,41 @@ void TexturesComponent::initPaths()
 	}
 }
 
-// clang-format off
 void TexturesComponent::initCvars()
 {
 	// bools
-	registerCvar_bool(Cvars::useCustomAds,		false).bindTo(m_useCustomAds);
-	registerCvar_bool(Cvars::useSingleAdImage,	true).bindTo(m_useSingleAdImage);
-	registerCvar_bool(Cvars::blockPromoAds,		true).bindTo(m_blockPromoAds);
+	registerCvar_bool(Cvars::useCustomAds, false).bindTo(m_useCustomAds);
+	registerCvar_bool(Cvars::useSingleAdImage, true).bindTo(m_useSingleAdImage);
+	registerCvar_bool(Cvars::blockPromoAds, true).bindTo(m_blockPromoAds);
 
 	// strings
-	registerCvar_string(Cvars::selectedAdName,	"").bindTo(m_selectedAdName);
+	registerCvar_string(Cvars::selectedAdName, "").bindTo(m_selectedAdName);
 }
 
 void TexturesComponent::initHooks()
 {
-	hookEventPost(Events::SeqAct_MainMenuSwitch_TA_Activated, [this](...)
-	{
-		runCommand(Commands::apply_ad_texture, 0.5f);
-	});
+	hookEventPost(Events::SeqAct_MainMenuSwitch_TA_Activated, [this](...) { runCommand(Commands::applyAdTexture, 0.5f); });
 
-	hookWithCaller(Events::AdManager_TA_AddBillboardMeshRequest, [this](ActorWrapper Caller, void* Params, ...)
-	{
-		auto params = reinterpret_cast<UAdManager_TA_execAddBillboardMeshRequest_Params*>(Params);
-		if (!params || !validUObject(params->Mesh))
-			return;
+	hookWithCaller(Events::AdManager_TA_AddBillboardMeshRequest,
+	    [this](ActorWrapper Caller, void* Params, ...)
+	    {
+		    auto params = reinterpret_cast<UAdManager_TA_execAddBillboardMeshRequest_Params*>(Params);
+		    if (!params || !validUObject(params->Mesh))
+			    return;
 
-		updateMicDataFromMesh(params->Mesh); // find and store all material/params texture data from billboard mesh
+		    updateMicDataFromMesh(params->Mesh); // find and store all material/params texture data from billboard mesh
 
-		if (!*m_blockPromoAds)
-			return;
+		    if (!*m_blockPromoAds)
+			    return;
 
-		params->Mesh = nullptr; // effectively blocks RL promo ads
-	});
+		    params->Mesh = nullptr; // effectively blocks RL promo ads
+	    });
 }
 
 void TexturesComponent::initCommands()
 {
-	registerCommand(Commands::apply_ad_texture, [this](...)
-	{
-		applyAds();
-	});
+	registerCommand(Commands::applyAdTexture, [this](...) { applyAds(); });
 }
-// clang-format on
-
-
 
 // ##############################################################################################################
 // ###############################################    FUNCTIONS    ##############################################
@@ -376,7 +366,7 @@ void TexturesComponent::updateMicDataFromMesh(UStaticMeshComponent* billboardMes
 	{
 		if (!validUObject(mat) || !mat->IsA<UMaterialInstanceConstant>())
 		{
-			//LOG("UMaterialInterface* mat is invalid or not a UMaterialInstanceConstant");
+			// LOG("UMaterialInterface* mat is invalid or not a UMaterialInstanceConstant");
 			continue;
 		}
 
@@ -480,27 +470,27 @@ void TexturesComponent::findAvailableAdImages()
 // unused atm, but was a neat lil function while testing
 void TexturesComponent::fetchBillboardData(bool log)
 {
-	m_billboardData.clear(); // yeet old data
+    m_billboardData.clear(); // yeet old data
 
-	UEngine* eng = Instances.IUEngine();
-	if (!validUObject(eng) || !validUObject(eng->EngineShare) || !eng->EngineShare->IsA<UEngineShare_TA>())
-		return;
+    UEngine* eng = Instances.IUEngine();
+    if (!validUObject(eng) || !validUObject(eng->EngineShare) || !eng->EngineShare->IsA<UEngineShare_TA>())
+        return;
 
-	auto engShare = static_cast<UEngineShare_TA*>(eng->EngineShare);
-	auto adMan    = engShare->AdManager;
-	if (!validUObject(adMan))
-		return;
+    auto engShare = static_cast<UEngineShare_TA*>(eng->EngineShare);
+    auto adMan    = engShare->AdManager;
+    if (!validUObject(adMan))
+        return;
 
-	for (const auto& adLocationData : adMan->BillboardZoneMapping)
-		m_billboardData.emplace_back(adLocationData);
+    for (const auto& adLocationData : adMan->BillboardZoneMapping)
+        m_billboardData.emplace_back(adLocationData);
 
-	if (log)
-	{
-		for (const auto& data : m_billboardData)
-			LOG("[{}] {}", data.zone_id, data.mat_name);
-	}
+    if (log)
+    {
+        for (const auto& data : m_billboardData)
+            LOG("[{}] {}", data.zone_id, data.mat_name);
+    }
 
-	LOG("Updated stored billboard data");
+    LOG("Updated stored billboard data");
 }
 */
 
@@ -728,8 +718,6 @@ void TexturesComponent::clearUnusedSavedTextures(const std::string& currentAdTex
 	m_cachedAdTextures[currentAdTexName] = currentTex;
 }
 
-
-
 // ##############################################################################################################
 // ##########################################    DISPLAY FUNCTIONS    ###########################################
 // ##############################################################################################################
@@ -778,7 +766,7 @@ void TexturesComponent::display()
 
 	if (ImGui::Button("Apply"))
 	{
-		GAME_THREAD_EXECUTE(runCommand(Commands::apply_ad_texture););
+		GAME_THREAD_EXECUTE({ runCommand(Commands::applyAdTexture); });
 	}
 
 	GUI::Spacing(4);
@@ -793,7 +781,7 @@ void TexturesComponent::display()
 		// refresh/parse ad textures button
 		if (ImGui::Button("Refresh"))
 		{
-			GAME_THREAD_EXECUTE(findAvailableAdImages(););
+			GAME_THREAD_EXECUTE({ findAvailableAdImages(); });
 		}
 	}
 	else
@@ -839,7 +827,7 @@ void TexturesComponent::display_adTexPicker(CVarWrapper& cvarToUpdate)
 
 	char        searchBuffer[128] = ""; // Buffer for the search input
 	std::string cvarVal           = cvarToUpdate.getStringValue();
-	const char* previewValue       = cvarVal.c_str();
+	const char* previewValue      = cvarVal.c_str();
 
 	if (ImGui::BeginSearchableCombo("Ad image##adTextureDropdown", previewValue, searchBuffer, sizeof(searchBuffer), "search..."))
 	{
@@ -859,7 +847,7 @@ void TexturesComponent::display_adTexPicker(CVarWrapper& cvarToUpdate)
 				{
 					cvarToUpdate.setValue(imgInfo.name); // update cvar string value
 
-					GAME_THREAD_EXECUTE(runCommand(Commands::apply_ad_texture););
+					GAME_THREAD_EXECUTE({ runCommand(Commands::applyAdTexture); });
 				}
 			}
 			else
@@ -868,7 +856,7 @@ void TexturesComponent::display_adTexPicker(CVarWrapper& cvarToUpdate)
 				{
 					cvarToUpdate.setValue(imgInfo.name); // update cvar string value
 
-					GAME_THREAD_EXECUTE(runCommand(Commands::apply_ad_texture););
+					GAME_THREAD_EXECUTE({ runCommand(Commands::applyAdTexture); });
 				}
 			}
 		}
@@ -891,10 +879,10 @@ void TexturesComponent::display_adTexDropdown(MICParamData& param_state, const s
 		{
 			paramState.custom_img_info = info;
 
-			GAME_THREAD_EXECUTE(
+			GAME_THREAD_EXECUTE({
 				applyAdsToSpecificLocations();
 				writeMicCustomizationsToJson();
-			);
+			});
 		}
 	};
 
@@ -925,6 +913,5 @@ void TexturesComponent::display_adTexDropdown(MICParamData& param_state, const s
 		ImGui::EndCombo();
 	}
 }
-
 
 class TexturesComponent Textures{};

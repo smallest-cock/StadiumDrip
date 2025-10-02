@@ -10,6 +10,7 @@
 #include <memory>
 
 #include <BakkesmodPluginTemplate/IMGUI/imgui.h>
+#include <BakkesmodPluginTemplate/IMGUI/imgui_internal.h>
 #include <BakkesmodPluginTemplate/IMGUI/imgui_stdlib.h>
 #include <BakkesmodPluginTemplate/IMGUI/imgui_searchablecombo.h>
 #include <BakkesmodPluginTemplate/IMGUI/imgui_rangeslider.h>
@@ -29,4 +30,4 @@
 #include "logging.h"
 
 namespace fs = std::filesystem;
-using json = nlohmann::json;
+using json   = nlohmann::json;

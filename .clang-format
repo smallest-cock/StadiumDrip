@@ -1,30 +1,34 @@
 # Core indentation behavior
-IndentWidth: 4 # 1 tab = 4 space-width
+IndentWidth: 4
 TabWidth: 4
-UseTab: ForIndentation # Tabs for indentation only
-ContinuationIndentWidth: 4 # 1 tab for wrapped lines too
+UseTab: ForIndentation
+ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 
-# Prevent excessive indent on wrapped lines
+# Allman style braces
 BreakBeforeBraces: Allman
-ColumnLimit: 140
 
-# Don’t aggressively align arguments across lines
+# Line breaking and alignment preferences
+ColumnLimit: 140
 BinPackArguments: false
 BinPackParameters: false
-AlignAfterOpenBracket: DontAlign # <- KEY SETTING for your case
+AlignAfterOpenBracket: DontAlign
 
-PenaltyBreakBeforeFirstCallParameter: 1 # Encourage breaking after '('
+PenaltyBreakBeforeFirstCallParameter: 1
 PenaltyBreakAssignment: 80
 PenaltyBreakString: 1000
 
 AlignConsecutiveAssignments: true
-AllowShortIfStatementsOnASingleLine: false
-AllowShortBlocksOnASingleLine: true
-AllowShortFunctionsOnASingleLine: Inline
 AlignConsecutiveDeclarations: true
 
 PointerAlignment: Left
 ReferenceAlignment: Left
 
+# Control statement formatting
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+# stop fucking with includes
 SortIncludes: false
+IncludeBlocks: Preserve
