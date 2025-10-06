@@ -1,113 +1,117 @@
 name: 🧱 Build DLL & release (Windows)
 
 env:
-    PLUGIN_NAME: StadiumDrip
-    TAG_NAME: ${{ github.event.inputs.tag || github.ref_name }}
+  PLUGIN_NAME: StadiumDrip
+  TAG_NAME: ${{ github.event.inputs.tag || github.ref_name }}
 
 on:
-    push:
-        tags:
-            - "v*.*.*"
-    workflow_dispatch:
-        inputs:
-            tag:
-                description: "Release tag (e.g. v1.0.1)"
-                required: true
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.1)"
+        required: true
 permissions:
-    contents: write
+  contents: write
 
 jobs:
-    check-changelog:
-        name: Check changelog (main)
-        runs-on: windows-latest
-        outputs:
-            changelog: ${{ steps.changelog.outputs.changelog }}
-        steps:
-            - name: 📥 Checkout repository (main)
-              uses: actions/checkout@v4
-              with:
-                  ref: main
-                  submodules: false
+  check-changelog:
+    name: Check changelog (main)
+    runs-on: windows-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: 📥 Checkout repository (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          submodules: false
 
-            - name: 📝 Extract changes from changelog
-              id: changelog
-              shell: bash
-              run: |
-                  # Prefer manual input if available
-                  TAG="${{ github.event.inputs.tag || github.ref_name }}"
+      - name: 📝 Extract changes from changelog
+        id: changelog
+        shell: bash
+        run: |
+          # Prefer manual input if available
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
 
-                  # fail if tag not found in CHANGELOG.md
-                  if ! grep -q "^## $TAG" CHANGELOG.md; then
-                    echo "❌ Tag '$TAG' not found in CHANGELOG.md"
-                    exit 1
-                  fi
+          # fail if tag not found in CHANGELOG.md
+          if ! grep -q "^## $TAG" CHANGELOG.md; then
+            echo "❌ Tag '$TAG' not found in CHANGELOG.md"
+            exit 1
+          fi
 
-                  echo "Using tag: $TAG"
+          echo "Using tag: $TAG"
 
-                  NOTES=$(awk "/^## $TAG/{flag=1; next} /^## /{flag=0} flag" CHANGELOG.md)
+          NOTES=$(awk "/^## $TAG/{flag=1; next} /^## /{flag=0} flag" CHANGELOG.md)
 
-                  echo "Extracted notes:"
-                  echo "$NOTES"
+          echo "Extracted notes:"
+          echo "$NOTES"
 
-                  {
-                    echo "changelog<<EOF"
-                    echo "$NOTES"
-                    echo "EOF"
-                  } >> "$GITHUB_OUTPUT"
+          {
+            echo "changelog<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-    build:
-        needs: check-changelog
-        runs-on: windows-latest
+  build:
+    needs: check-changelog
+    runs-on: windows-latest
 
-        steps:
-            - name: 📥 Checkout repository (with submodules)
-              uses: actions/checkout@v4
-              with:
-                  submodules: false
+    steps:
+      - name: 📥 Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
 
-            - name: 🍆 Initialize submodules
-              run: ./scripts/init-submodules.bat
+      - name: 🍆 Initialize submodules
+        run: ./scripts/init-submodules.bat
 
-            - name: 🪟 Set up MSVC
-              uses: ilammy/msvc-dev-cmd@v1
+      - name: 🪟 Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
-            - name: ⚙️ Set up CMake
-              uses: jwlawson/actions-setup-cmake@v1
+      - name: ⚙️ Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1
 
-            - name: 🥷 Set up Ninja
-              uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: 🥷 Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
 
-            - name: 🧱 Configure project (CMake)
-              run: cmake --preset windows-x64-msvc
+      - name: 🧱 Configure project (CMake)
+        run: cmake --preset windows-x64-msvc
 
-            - name: 🔨 Build project (CMake + Ninja)
-              run: cmake --build build
+      - name: 🔨 Build project (CMake + Ninja)
+        run: cmake --build build
 
-            - name: 🥵 Prepare release files
-              shell: bash
-              run: |
-                  7z a source.zip * -xr!vcpkg_installed -xr!README.md -xr!build -xr!plugins -xr!scripts -xr!assets -xr!.git
-                  mkdir -p dist temp/debug temp/installation_zip
-                  mv ./source.zip temp/debug
-                  cp ./plugins/*.dll temp/installation_zip
-                  mv ./scripts/install.bat temp/installation_zip
-                  mv ./plugins/*.dll temp/debug
-                  mv ./plugins/*.pdb temp/debug
-                  7z a "dist/${{ env.PLUGIN_NAME }}.zip" ./temp/installation_zip/*
-                  7z a dist/debug.zip ./temp/debug/*
+      - name: 🥵 Prepare release files
+        shell: bash
+        run: |
+          7z a source.zip * -xr!vcpkg_installed -xr!README.md -xr!build -xr!plugins -xr!scripts -xr!assets -xr!.git
+          mkdir -p dist temp/debug temp/installation_zip
+          mv ./source.zip temp/debug
+          cp ./plugins/*.dll temp/installation_zip
+          mv ./scripts/install.bat temp/installation_zip
+          mv ./plugins/*.dll temp/debug
+          mv ./plugins/*.pdb temp/debug
+          7z a "dist/${{ env.PLUGIN_NAME }}.zip" ./temp/installation_zip/*
+          7z a dist/debug.zip ./temp/debug/*
 
-            - name: 🚀 Create release
-              uses: softprops/action-gh-release@v2
-              with:
-                  tag_name: ${{ env.TAG_NAME }}
-                  body: |
-                      ## Install Steps
-                      1. Close Rocket League
+      - name: 🚀 Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          body: |
+            ## Install Steps
+            1. Close Rocket League
 
-                      2. Click `${{ env.PLUGIN_NAME }}.zip` below to download it
+            2. Click `${{ env.PLUGIN_NAME }}.zip` below to download it
 
-                      3. Extract `${{ env.PLUGIN_NAME }}.zip` and run `install.bat`
+            3. Extract `${{ env.PLUGIN_NAME }}.zip` and run `install.bat`
+              - If you get an error when running `install.bat`, you can manually drag/drop `${{ env.PLUGIN_NAME }}.dll` into your bakkesmod plugins folder located here:
+                ```
+                %appdata%\bakkesmod\bakkesmod\plugins
+                ```
 
-                      ## Notes
-                      ${{ needs.check-changelog.outputs.changelog }}
-                  files: dist/*.zip
+            ## Notes
+            ${{ needs.check-changelog.outputs.changelog }}
+          files: dist/*.zip
