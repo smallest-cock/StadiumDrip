@@ -1,17 +1,16 @@
 #include "pch.h"
 #include "Instances.hpp"
 
-
 InstancesComponent::InstancesComponent() { OnCreate(); }
 
 InstancesComponent::~InstancesComponent() { OnDestroy(); }
 
 void InstancesComponent::OnCreate()
 {
-	I_UCanvas = nullptr;
-	I_AHUD = nullptr;
+	I_UCanvas             = nullptr;
+	I_AHUD                = nullptr;
 	I_UGameViewportClient = nullptr;
-	I_APlayerController = nullptr;
+	I_APlayerController   = nullptr;
 }
 
 void InstancesComponent::OnDestroy()
@@ -30,7 +29,6 @@ void InstancesComponent::OnDestroy()
 	m_createdObjects.clear();
 }
 
-
 // ========================================= to initialize globals ===========================================
 
 uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* pattern, const char* mask)
@@ -38,10 +36,10 @@ uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* p
 	MODULEINFO info{};
 	GetModuleInformation(GetCurrentProcess(), module, &info, sizeof(MODULEINFO));
 
-	uintptr_t start = reinterpret_cast<uintptr_t>(module);
-	size_t length = info.SizeOfImage;
+	uintptr_t start  = reinterpret_cast<uintptr_t>(module);
+	size_t    length = info.SizeOfImage;
 
-	size_t pos = 0;
+	size_t pos        = 0;
 	size_t maskLength = std::strlen(mask) - 1;
 
 	for (uintptr_t retAddress = start; retAddress < start + length; retAddress++)
@@ -63,26 +61,26 @@ uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* p
 	return NULL;
 }
 
-uintptr_t InstancesComponent::GetGNamesAddress() 
+uintptr_t InstancesComponent::GetGNamesAddress()
 {
 	unsigned char GNamesPattern[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x35\x25\x02\x00";
-	char GNamesMask[] = "??????xx??xxxxxx";
+	char          GNamesMask[]    = "??????xx??xxxxxx";
 
 	auto GNamesAddress = FindPattern(GetModuleHandle(L"RocketLeague.exe"), GNamesPattern, GNamesMask);
 
 	return GNamesAddress;
 }
 
-uintptr_t InstancesComponent::GetGObjectsAddress() 
-{
-	return GetGNamesAddress() + 0x48;
-}
+uintptr_t InstancesComponent::GetGObjectsAddress() { return GetGNamesAddress() + 0x48; }
 
 bool InstancesComponent::InitGlobals()
 {
 	uintptr_t gnamesAddr = GetGNamesAddress();
-	GNames = reinterpret_cast<TArray<FNameEntry*>*>(gnamesAddr);
-	GObjects = reinterpret_cast<TArray<UObject*>*>(gnamesAddr + 0x48);
+	GNames               = reinterpret_cast<TArray<FNameEntry*>*>(gnamesAddr);
+	GObjects             = reinterpret_cast<TArray<UObject*>*>(gnamesAddr + 0x48);
+
+	auto baseAddr = reinterpret_cast<uintptr_t>(GetModuleHandle(L"RocketLeague.exe"));
+	GMalloc       = baseAddr + GMALLOC_OFFSET;
 
 	return CheckGlobals();
 }
@@ -109,21 +107,20 @@ bool InstancesComponent::AreGNamesValid()
 
 bool InstancesComponent::CheckGlobals()
 {
-	bool gnamesValid = GNames && AreGNamesValid();
-    bool gobjectsValid = GObjects && AreGObjectsValid();
-    if (!gnamesValid || !gobjectsValid)
-    {
-        LOG("(onLoad) Error: RLSDK classes are wrong... plugin needs an update :(");
-        LOG(std::format("GNames valid: {} -- GObjects valid: {}", gnamesValid, gobjectsValid));
-        return false;
-    }
+	bool gnamesValid   = GNames && AreGNamesValid();
+	bool gobjectsValid = GObjects && AreGObjectsValid();
+	if (!gnamesValid || !gobjectsValid)
+	{
+		LOGERROR("(onLoad) RLSDK classes are wrong... plugin needs an update :(");
+		LOG(std::format("GNames valid: {} -- GObjects valid: {}", gnamesValid, gobjectsValid));
+		return false;
+	}
 
-    LOG("Globals Initialized :)");
-    return true;
+	LOG("Globals Initialized :)");
+	return true;
 }
 
 // ===========================================================================================================
-
 
 class UClass* InstancesComponent::FindStaticClass(const std::string& className)
 {
@@ -206,40 +203,19 @@ void InstancesComponent::MarkForDestroy(class UObject* object)
 	}
 }
 
-class UEngine* InstancesComponent::IUEngine()
-{
-	return UEngine::GetEngine();
-}
+class UEngine* InstancesComponent::IUEngine() { return UEngine::GetEngine(); }
 
-class UAudioDevice* InstancesComponent::IUAudioDevice()
-{
-	return UEngine::GetAudioDevice();
-}
+class UAudioDevice* InstancesComponent::IUAudioDevice() { return UEngine::GetAudioDevice(); }
 
-class AWorldInfo* InstancesComponent::IAWorldInfo()
-{
-	return UEngine::GetCurrentWorldInfo();
-}
+class AWorldInfo* InstancesComponent::IAWorldInfo() { return UEngine::GetCurrentWorldInfo(); }
 
-class UCanvas* InstancesComponent::IUCanvas()
-{
-	return I_UCanvas;
-}
+class UCanvas* InstancesComponent::IUCanvas() { return I_UCanvas; }
 
-class AHUD* InstancesComponent::IAHUD()
-{
-	return I_AHUD;
-}
+class AHUD* InstancesComponent::IAHUD() { return I_AHUD; }
 
-class UFileSystem* InstancesComponent::IUFileSystem()
-{
-	return reinterpret_cast<UFileSystem*>(UFileSystem::StaticClass());
-}
+class UFileSystem* InstancesComponent::IUFileSystem() { return reinterpret_cast<UFileSystem*>(UFileSystem::StaticClass()); }
 
-class UGameViewportClient* InstancesComponent::IUGameViewportClient()
-{
-	return I_UGameViewportClient;
-}
+class UGameViewportClient* InstancesComponent::IUGameViewportClient() { return I_UGameViewportClient; }
 
 class ULocalPlayer* InstancesComponent::IULocalPlayer()
 {
@@ -253,10 +229,7 @@ class ULocalPlayer* InstancesComponent::IULocalPlayer()
 	return nullptr;
 }
 
-class APlayerController* InstancesComponent::IAPlayerController()
-{
-	return I_APlayerController;
-}
+class APlayerController* InstancesComponent::IAPlayerController() { return I_APlayerController; }
 
 struct FUniqueNetId InstancesComponent::GetUniqueID()
 {
@@ -266,7 +239,6 @@ struct FUniqueNetId InstancesComponent::GetUniqueID()
 
 	return localPlayer->eventGetUniqueNetId();
 }
-
 
 // ======================= get instance funcs =========================
 
@@ -364,7 +336,6 @@ UCarColorSet_TA* InstancesComponent::GetColorPalette()
 	return colorPalette;
 }
 
-
 // misc
 std::string InstancesComponent::fullNameWithoutClass(UObject* obj)
 {
@@ -378,6 +349,5 @@ std::string InstancesComponent::fullNameWithoutClass(UObject* obj)
 
 	return fullName;
 }
-
 
 class InstancesComponent Instances{};

@@ -249,7 +249,7 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 		turntable->SetLocation(newLocation);
 
 		// bind turntable to the car, or sumn like that
-		previewActor->SetTurnTableActor(turntable, previewActor->Rotation);
+		previewActor->SetTurntableActor(turntable, previewActor->Rotation);
 		DEBUGLOG("Binded turntable to local player car");
 
 		// turntable is an extra 6 units off the ground compared to car, so raise car up 6 units to compensate & avoid clipping
