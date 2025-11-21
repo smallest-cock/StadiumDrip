@@ -10,7 +10,7 @@ void StadiumDrip::onLoad()
 {
 	_globalCvarManager = cvarManager;
 
-	if (!Instances.InitGlobals())
+	if (!Instances.initGlobals())
 		return;
 
 	pluginInit();
@@ -18,7 +18,4 @@ void StadiumDrip::onLoad()
 	LOG("Stadium Drip loaded :)");
 }
 
-void StadiumDrip::onUnload()
-{
-	Teams.restoreOgColorsInUnload();
-}
+void StadiumDrip::onUnload() { Teams.restoreOgColorsInUnload(); }

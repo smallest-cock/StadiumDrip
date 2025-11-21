@@ -1,11 +1,7 @@
 #include "pch.h"
 #include "Instances.hpp"
 
-InstancesComponent::InstancesComponent() { OnCreate(); }
-
-InstancesComponent::~InstancesComponent() { OnDestroy(); }
-
-void InstancesComponent::OnCreate()
+void InstancesComponent::onCreate()
 {
 	I_UCanvas             = nullptr;
 	I_AHUD                = nullptr;
@@ -13,7 +9,7 @@ void InstancesComponent::OnCreate()
 	I_APlayerController   = nullptr;
 }
 
-void InstancesComponent::OnDestroy()
+void InstancesComponent::onDestroy()
 {
 	m_staticClasses.clear();
 	m_staticFunctions.clear();
@@ -31,9 +27,20 @@ void InstancesComponent::OnDestroy()
 
 // ========================================= to initialize globals ===========================================
 
-uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* pattern, const char* mask)
+constexpr auto MODULE_NAME = L"RocketLeague.exe";
+
+uintptr_t findRipRelativeAddr(uintptr_t startAddr, int offsetToDisplacementInt32)
 {
-	MODULEINFO info{};
+	if (!startAddr)
+		return 0;
+	uintptr_t ripRelativeOffsetAddr = startAddr + offsetToDisplacementInt32;
+	int32_t   displacement          = *reinterpret_cast<int32_t*>(ripRelativeOffsetAddr);
+	return (ripRelativeOffsetAddr + 4) + displacement;
+};
+
+uintptr_t InstancesComponent::findPattern(HMODULE module, const unsigned char* pattern, const char* mask)
+{
+	MODULEINFO info = {};
 	GetModuleInformation(GetCurrentProcess(), module, &info, sizeof(MODULEINFO));
 
 	uintptr_t start  = reinterpret_cast<uintptr_t>(module);
@@ -47,9 +54,7 @@ uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* p
 		if (*reinterpret_cast<unsigned char*>(retAddress) == pattern[pos] || mask[pos] == '?')
 		{
 			if (pos == maskLength)
-			{
 				return (retAddress - maskLength);
-			}
 			pos++;
 		}
 		else
@@ -61,31 +66,51 @@ uintptr_t InstancesComponent::FindPattern(HMODULE module, const unsigned char* p
 	return NULL;
 }
 
-uintptr_t InstancesComponent::GetGNamesAddress()
+uintptr_t InstancesComponent::findGNamesAddress()
 {
 	unsigned char GNamesPattern[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x35\x25\x02\x00";
 	char          GNamesMask[]    = "??????xx??xxxxxx";
 
-	auto GNamesAddress = FindPattern(GetModuleHandle(L"RocketLeague.exe"), GNamesPattern, GNamesMask);
-
-	return GNamesAddress;
+	return findPattern(GetModuleHandle(MODULE_NAME), GNamesPattern, GNamesMask);
 }
 
-uintptr_t InstancesComponent::GetGObjectsAddress() { return GetGNamesAddress() + 0x48; }
-
-bool InstancesComponent::InitGlobals()
+uintptr_t InstancesComponent::findGMallocAddress()
 {
-	uintptr_t gnamesAddr = GetGNamesAddress();
-	GNames               = reinterpret_cast<TArray<FNameEntry*>*>(gnamesAddr);
-	GObjects             = reinterpret_cast<TArray<UObject*>*>(gnamesAddr + 0x48);
+	constexpr uint8_t pattern[] = "\x48\x89\x0D\x00\x00\x00\x00\x48\x8B\x01\xFF\x50\x60";
+	constexpr auto    mask      = "xxx????xxxxxx";
 
-	auto baseAddr = reinterpret_cast<uintptr_t>(GetModuleHandle(L"RocketLeague.exe"));
-	GMalloc       = baseAddr + GMALLOC_OFFSET;
-
-	return CheckGlobals();
+	uintptr_t foundAddr = findPattern(GetModuleHandle(MODULE_NAME), pattern, mask);
+	if (!foundAddr)
+	{
+		LOGERROR("GMalloc wasn't found! Returning 0...");
+		return 0;
+	}
+	return findRipRelativeAddr(foundAddr, 3);
 }
 
-bool InstancesComponent::AreGObjectsValid()
+bool InstancesComponent::initGlobals()
+{
+	uintptr_t gnamesAddr = findGNamesAddress();
+	if (!gnamesAddr)
+	{
+		LOGERROR("Failed to find GNames address via pattern scan");
+		return false;
+	}
+	GNames   = reinterpret_cast<GNames_t>(gnamesAddr);
+	GObjects = reinterpret_cast<GObjects_t>(gnamesAddr + 0x48);
+
+	uintptr_t gmallocAddr = findGMallocAddress();
+	if (!gmallocAddr)
+	{
+		LOGERROR("Failed to find GMalloc address via pattern scan");
+		return false;
+	}
+	GMalloc = gmallocAddr;
+
+	return checkGlobals();
+}
+
+bool InstancesComponent::areGObjectsValid()
 {
 	if (UObject::GObjObjects()->size() > 0 && UObject::GObjObjects()->capacity() > UObject::GObjObjects()->size())
 	{
@@ -95,7 +120,7 @@ bool InstancesComponent::AreGObjectsValid()
 	return false;
 }
 
-bool InstancesComponent::AreGNamesValid()
+bool InstancesComponent::areGNamesValid()
 {
 	if (FName::Names()->size() > 0 && FName::Names()->capacity() > FName::Names()->size())
 	{
@@ -105,14 +130,14 @@ bool InstancesComponent::AreGNamesValid()
 	return false;
 }
 
-bool InstancesComponent::CheckGlobals()
+bool InstancesComponent::checkGlobals()
 {
-	bool gnamesValid   = GNames && AreGNamesValid();
-	bool gobjectsValid = GObjects && AreGObjectsValid();
+	bool gnamesValid   = GNames && areGNamesValid();
+	bool gobjectsValid = GObjects && areGObjectsValid();
 	if (!gnamesValid || !gobjectsValid)
 	{
 		LOGERROR("(onLoad) RLSDK classes are wrong... plugin needs an update :(");
-		LOG(std::format("GNames valid: {} -- GObjects valid: {}", gnamesValid, gobjectsValid));
+		LOG("GNames valid: {} -- GObjects valid: {}", gnamesValid, gobjectsValid);
 		return false;
 	}
 
@@ -203,18 +228,12 @@ void InstancesComponent::MarkForDestroy(class UObject* object)
 	}
 }
 
-class UEngine* InstancesComponent::IUEngine() { return UEngine::GetEngine(); }
-
-class UAudioDevice* InstancesComponent::IUAudioDevice() { return UEngine::GetAudioDevice(); }
-
-class AWorldInfo* InstancesComponent::IAWorldInfo() { return UEngine::GetCurrentWorldInfo(); }
-
-class UCanvas* InstancesComponent::IUCanvas() { return I_UCanvas; }
-
-class AHUD* InstancesComponent::IAHUD() { return I_AHUD; }
-
-class UFileSystem* InstancesComponent::IUFileSystem() { return reinterpret_cast<UFileSystem*>(UFileSystem::StaticClass()); }
-
+class UEngine*             InstancesComponent::IUEngine() { return UEngine::GetEngine(); }
+class UAudioDevice*        InstancesComponent::IUAudioDevice() { return UEngine::GetAudioDevice(); }
+class AWorldInfo*          InstancesComponent::IAWorldInfo() { return UEngine::GetCurrentWorldInfo(); }
+class UCanvas*             InstancesComponent::IUCanvas() { return I_UCanvas; }
+class AHUD*                InstancesComponent::IAHUD() { return I_AHUD; }
+class UFileSystem*         InstancesComponent::IUFileSystem() { return reinterpret_cast<UFileSystem*>(UFileSystem::StaticClass()); }
 class UGameViewportClient* InstancesComponent::IUGameViewportClient() { return I_UGameViewportClient; }
 
 class ULocalPlayer* InstancesComponent::IULocalPlayer()

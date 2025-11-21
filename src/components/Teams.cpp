@@ -1,6 +1,6 @@
-#include "Cvars.hpp"
 #include "pch.h"
 #include "Teams.hpp"
+#include "Cvars.hpp"
 #include "Macros.hpp"
 #include "Events.hpp"
 
@@ -87,20 +87,24 @@ void TeamsComponent::initCvars()
 
 void TeamsComponent::initHooks()
 {
-	// for freeplay colors
+	/**
+	    For freeplay and custom training, we need to edit SetColorList params
+	    (custom colors achieved via editing team archetypes get quickly overridden by SetColorList calls for whatever reason)
+
+	    Not sure what the underlying commonality between freeplay and custom training is, but apparently
+	    SetColorList gets called frequently, like when resetting the shot
+	*/
 	hookWithCaller(Events::Team_TA_SetColorList,
 	    [this](ActorWrapper Caller, void* Params, ...)
 	    {
-		    // freeplay seems to be the only place we need to override SetColorList params (editing archetypes doesnt work for whatever
-		    // reason)
-		    if (!gameWrapper->IsInFreeplay())
+		    if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining())
 			    return;
 
-		    auto caller = reinterpret_cast<ATeam_TA*>(Caller.memory_address);
+		    auto* caller = reinterpret_cast<ATeam_TA*>(Caller.memory_address);
 		    if (!validUObject(caller))
 			    return;
 
-		    auto params = reinterpret_cast<ATeam_TA_execSetColorList_Params*>(Params);
+		    auto* params = reinterpret_cast<ATeam_TA_execSetColorList_Params*>(Params);
 		    if (!params)
 			    return;
 
@@ -123,7 +127,7 @@ void TeamsComponent::initHooks()
 		    for (auto& col : params->ColorList)
 			    col = newColor;
 
-		    LOG("Changed SetColorList() params for team {}", Format::ToHexString(caller));
+		    LOG("Changed ATeam_TA::SetColorList(...) params for ATeam_TA ({})", Format::ToHexString(caller));
 	    });
 
 	// for freeplay RGB
@@ -710,23 +714,20 @@ void TeamsComponent::display()
 	auto singleFreeplayColor_cvar    = getCvar(Cvars::singleFreeplayColor);
 	auto useRGBFreeplayColors_cvar   = getCvar(Cvars::useRgbFreeplayColors);
 	auto rgbSpeed_cvar               = getCvar(Cvars::rgbSpeed);
-
-	if (!blueTeamColor_cvar) // if any is null, they prolly all are...
+	if (!blueTeamColor_cvar)
 		return;
 
-	const float team_names_height = ImGui::GetContentRegionAvail().y * 0.3f; // 30% available height
+	const float teamNamesHeight = ImGui::GetContentRegionAvail().y * 0.3f; // 30% available height
 
 	{
-		GUI::ScopedChild c{"teamNames", ImVec2(0, team_names_height), true};
+		GUI::ScopedChild c{"teamNames", ImVec2(0, teamNamesHeight), true};
 
 		GUI::Spacing(2);
 
 		// enable custom team names checkbox
 		bool useCustomTeamNames = useCustomTeamNames_cvar.getBoolValue();
 		if (ImGui::Checkbox("Custom team names", &useCustomTeamNames))
-		{
 			useCustomTeamNames_cvar.setValue(useCustomTeamNames);
-		}
 
 		if (useCustomTeamNames)
 		{
@@ -759,15 +760,10 @@ void TeamsComponent::display()
 					constexpr float NAME_SPACING = 200.0f;
 
 					ImGui::TextColored(GUI::Colors::Yellow, "Blue:");
-
 					GUI::SameLineSpacing_absolute(NAME_SPACING);
-
 					ImGui::TextColored(GUI::Colors::Yellow, "Orange:");
-
 					ImGui::TextUnformatted(m_ogBlueName.c_str());
-
 					GUI::SameLineSpacing_absolute(NAME_SPACING);
-
 					ImGui::TextUnformatted(m_ogOrangeName.c_str());
 
 					GUI::Spacing(2);
@@ -785,15 +781,12 @@ void TeamsComponent::display()
 			GUI::ScopedChild d{"matchTeamColors", ImVec2(match_colors_width, 0), true};
 
 			ImGui::TextColored(GUI::Colors::Yellow, "Matches");
-
 			GUI::Spacing(2);
 
 			// enable custom team colors checkbox
 			bool useCustomTeamColors = useCustomTeamColors_cvar.getBoolValue();
 			if (ImGui::Checkbox("Custom team colors", &useCustomTeamColors))
-			{
 				useCustomTeamColors_cvar.setValue(useCustomTeamColors);
-			}
 
 			if (useCustomTeamColors)
 			{
@@ -802,25 +795,19 @@ void TeamsComponent::display()
 				// blue team color
 				LinearColor blueTeamFieldColor = blueTeamColor_cvar.getColorValue() / 255; // converts from 0-255 color to 0.0-1.0 color
 				if (ImGui::ColorEdit3("Blue##FieldColor", &blueTeamFieldColor.R, ImGuiColorEditFlags_NoInputs))
-				{
 					blueTeamColor_cvar.setValue(blueTeamFieldColor * 255);
-				}
 
 				GUI::Spacing(2);
 
 				// orange team color
 				LinearColor orangeTeamFieldColor = orangeTeamColor_cvar.getColorValue() / 255; // converts from 0-255 color to 0.0-1.0 color
 				if (ImGui::ColorEdit3("Orange##FieldColor", &orangeTeamFieldColor.R, ImGuiColorEditFlags_NoInputs))
-				{
 					orangeTeamColor_cvar.setValue(orangeTeamFieldColor * 255);
-				}
 
 				GUI::Spacing(2);
 
 				if (ImGui::Button("Apply##custom_team_colors"))
-				{
 					GAME_THREAD_EXECUTE({ applyColors(); });
-				}
 			}
 
 			GUI::Spacing(4);
@@ -829,6 +816,8 @@ void TeamsComponent::display()
 			{
 				if (ImGui::CollapsingHeader("Cached original colors"))
 				{
+					GUI::ScopedIndent indent{};
+
 					static auto displayOgColors = [this](OgTeamColorBackup& col)
 					{
 						ImGui::TextUnformatted("FontColor:");
@@ -874,22 +863,17 @@ void TeamsComponent::display()
 						}
 					};
 
-					if (m_backedUpOgBlueColor)
+					if (m_backedUpOgBlueColor && ImGui::CollapsingHeader("Blue"))
 					{
-						if (ImGui::CollapsingHeader("Blue"))
-						{
-							displayOgColors(m_ogBlueColor);
-
-							GUI::Spacing(2);
-						}
+						GUI::ScopedIndent indent{};
+						displayOgColors(m_ogBlueColor);
+						GUI::Spacing(2);
 					}
 
-					if (m_backedUpOgOrangeColor)
+					if (m_backedUpOgOrangeColor && ImGui::CollapsingHeader("Orange"))
 					{
-						if (ImGui::CollapsingHeader("Orange"))
-						{
-							displayOgColors(m_ogOrangeColor);
-						}
+						GUI::ScopedIndent indent{};
+						displayOgColors(m_ogOrangeColor);
 					}
 				}
 			}
@@ -901,7 +885,6 @@ void TeamsComponent::display()
 			GUI::ScopedChild e{"freeplayTeamColors", ImGui::GetContentRegionAvail(), true};
 
 			ImGui::TextColored(GUI::Colors::Yellow, "Freeplay");
-
 			GUI::Spacing(2);
 
 			// enable custom team colors checkbox

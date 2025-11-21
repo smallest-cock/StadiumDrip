@@ -4,24 +4,32 @@
 
 static constexpr int32_t INSTANCES_INTERATE_OFFSET = 10;
 
+template <typename T>
+concept UObjectOrDerived = std::is_base_of_v<UObject, T>;
+
+using GNames_t   = TArray<FNameEntry*>*;
+using GObjects_t = TArray<UObject*>*;
+
 class InstancesComponent
 {
 public:
-	InstancesComponent();
-	~InstancesComponent();
+	InstancesComponent() { onCreate(); }
+	~InstancesComponent() { onDestroy(); }
 
 public:
-	void OnCreate();
-	void OnDestroy();
+	void onCreate();
+	void onDestroy();
 
-	// initialize globals for RLSDK
-	uintptr_t FindPattern(HMODULE module, const unsigned char* pattern, const char* mask);
-	uintptr_t GetGNamesAddress();
-	uintptr_t GetGObjectsAddress();
-	bool      InitGlobals();
-	bool      AreGObjectsValid();
-	bool      AreGNamesValid();
-	bool      CheckGlobals();
+	bool initGlobals(); // initialize globals for RLSDK
+
+private:
+	uintptr_t findPattern(HMODULE module, const unsigned char* pattern, const char* mask);
+	uintptr_t findGNamesAddress();
+	uintptr_t findGMallocAddress();
+
+	bool areGObjectsValid();
+	bool areGNamesValid();
+	bool checkGlobals();
 
 private:
 	std::map<std::string, class UClass*>    m_staticClasses;

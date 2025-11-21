@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.8
+- Fixed bug where custom team colors get reverted to default colors in custom training
+- Updated internal SDK to match latest version of RL (v2.62)
+
 ## v1.2.7
 - Updated internal SDK to match latest version of RL (v2.59)
 

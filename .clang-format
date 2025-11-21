@@ -23,6 +23,7 @@ AlignConsecutiveDeclarations: true
 
 PointerAlignment: Left
 ReferenceAlignment: Left
+SortIncludes: false
 
 # Control statement formatting
 AllowShortIfStatementsOnASingleLine: false
@@ -30,5 +31,7 @@ AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 
 # stop fucking with includes
-SortIncludes: false
 IncludeBlocks: Preserve
+
+NamespaceIndentation: All
+FixNamespaceComments: false # dont add "// namespace MyNamespace" at the end of namespace
