@@ -349,6 +349,7 @@ public:
 	USeqAct_SetStadiumTeamColors_TA* getSetStadiumTeamColorsSeqAct();
 	AGameEvent_Team_TA*              getTeamGameEvent();
 	APlayerController*               getPlayerController();
+	ACarPreviewActor_TA*             getCarPreviewActor();
 	AGFxHUD_TA*                      getHUD();
 	AGameEvent_TA*                   getGameEvent();
 	UMatchType_TA*                   getMatchType();

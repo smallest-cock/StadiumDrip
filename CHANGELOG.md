@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.9
+- Added new Paris map to main menu background changer
+- Increased the range of custom location sliders in main menu
+- Added a basic car rotation feature in main menu 
+- Updated internal SDK to match latest version of RL (v2.63)
+
 ## v1.2.8
 - Fixed bug where custom team colors get reverted to default colors in custom training
 - Updated internal SDK to match latest version of RL (v2.62)

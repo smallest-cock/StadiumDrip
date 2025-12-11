@@ -23,18 +23,27 @@ private:
 	static constexpr float   DEFAULT_CAR_Z        = 0.0f;
 	static constexpr FVector DEFAULT_CAR_LOCATION = {DEFAULT_CAR_X, DEFAULT_CAR_Y, DEFAULT_CAR_Z};
 
-	static constexpr float   DEFAULT_FOV                         = 55.0f;
-	static constexpr FVector default_turntable_location          = {198712.0f, -62.0f, 43.0f};
-	static constexpr FVector default_premium_garage_car_location = {198712.0f, -62.0f, 49.0f};
+	static constexpr int32_t  DEFAULT_CAR_PITCH    = 0;
+	static constexpr int32_t  DEFAULT_CAR_YAW      = -1248;
+	static constexpr int32_t  DEFAULT_CAR_ROLL     = 0;
+	static constexpr FRotator DEFAULT_CAR_ROTATION = {DEFAULT_CAR_PITCH, DEFAULT_CAR_YAW, DEFAULT_CAR_ROLL};
+
+	static constexpr float   DEFAULT_FOV                      = 55.0f;
+	static constexpr FVector DEFAULT_TURNTABLE_LOCATION       = {198712.0f, -62.0f, 43.0f};
+	static constexpr FVector DEFAULT_PREM_GARAGE_CAR_LOCATION = {198712.0f, -62.0f, 49.0f};
 
 	// cvar values
 	std::shared_ptr<bool>  m_useCustomLocation   = std::make_shared<bool>(false);
 	std::shared_ptr<bool>  m_preserveCamRotation = std::make_shared<bool>(true);
+	std::shared_ptr<bool>  m_showCarTurntable    = std::make_shared<bool>(true);
 	std::shared_ptr<float> m_carLocationX        = std::make_shared<float>(DEFAULT_CAR_X);
 	std::shared_ptr<float> m_carLocationY        = std::make_shared<float>(DEFAULT_CAR_Y);
 	std::shared_ptr<float> m_carLocationZ        = std::make_shared<float>(DEFAULT_CAR_Z);
+	std::shared_ptr<int>   m_carRotationPitch    = std::make_shared<int>(DEFAULT_CAR_PITCH);
+	std::shared_ptr<int>   m_carRotationYaw      = std::make_shared<int>(DEFAULT_CAR_YAW);
+	std::shared_ptr<int>   m_carRotationRoll     = std::make_shared<int>(DEFAULT_CAR_ROLL);
 	std::shared_ptr<float> m_customFOV           = std::make_shared<float>(DEFAULT_FOV);
-	std::shared_ptr<int>   m_bgIndex             = std::make_shared<int>(26);
+	std::shared_ptr<int>   m_bgIndex             = std::make_shared<int>(static_cast<int>(EMainMenuBackground::MMBG_Paris));
 	std::shared_ptr<int>   m_camRotationPitch    = std::make_shared<int>(-700);
 	std::shared_ptr<int>   m_camRotationYaw      = std::make_shared<int>(0);
 
@@ -52,6 +61,7 @@ private:
 	    {"Futura Garden", EMainMenuBackground::MMBG_FutureUtopia},
 	    {"DFH Stadium (10th Anniversary)", EMainMenuBackground::MMBG_Anniversary},
 	    {"Boostfield Mall", EMainMenuBackground::MMBG_Mall},
+	    {"Parc de Paris", EMainMenuBackground::MMBG_Paris},
 	};
 	std::map<EMainMenuBackground, std::string> m_reversedWorkingMMBGIds;
 	FVector                                    m_mmTurntableLocation = DEFAULT_CAR_LOCATION;
@@ -62,7 +72,9 @@ private:
 
 private:
 	void                setBackground(EMainMenuBackground backgroundID, bool log = false);
-	void                setLocation(const FVector& newLocation, bool log = false);
+	void                setCarLocation(const FVector& newLocation, bool log = false);
+	void                setTurntableLocation(const FVector& newLocation, bool makeVisible, ATurnTableActor_TA* turntable = nullptr);
+	void                setRotation(const FRotator& rot);
 	void                resetLocation(bool log = false);
 	void                setCameraFOV(float newFOV, bool log = false);
 	void                resetCameraFOV(bool log = false);
@@ -71,6 +83,8 @@ private:
 
 	void restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet_TA* premiumGarage = nullptr);
 	void restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* premiumGarage = nullptr);
+
+	static bool shouldShowTurntable(const FVector& location);
 
 public:
 	void applyCustomCamSettings();

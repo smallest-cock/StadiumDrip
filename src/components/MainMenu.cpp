@@ -1,8 +1,12 @@
-#include "Cvars.hpp"
 #include "pch.h"
 #include "MainMenu.hpp"
+#include "ModUtils/gui/GuiTools.hpp"
+#include "components/Instances.hpp"
+#include "logging.h"
+#include "Cvars.hpp"
 #include "Events.hpp"
 #include "Macros.hpp"
+#include <string_view>
 
 // ##############################################################################################################
 // ###############################################    INIT    ###################################################
@@ -103,6 +107,7 @@ void MainMenuComponent::initCvars()
 	// bools
 	registerCvar_bool(Cvars::useCustomMainMenuLocation, false).bindTo(m_useCustomLocation);
 	registerCvar_bool(Cvars::preserveMainMenuCameraRotation, true).bindTo(m_preserveCamRotation);
+	registerCvar_bool(Cvars::showCarTurntable, true).bindTo(m_showCarTurntable);
 
 	// floats
 	registerCvar_number(Cvars::mainMenuX, DEFAULT_CAR_X).bindTo(m_carLocationX);
@@ -114,6 +119,9 @@ void MainMenuComponent::initCvars()
 	registerCvar_number(Cvars::mainMenuBgIdx, 26, true, 0, 100).bindTo(m_bgIndex);
 	registerCvar_number(Cvars::mainMenuCamRotationPitch, -700).bindTo(m_camRotationPitch);
 	registerCvar_number(Cvars::mainMenuCamRotationYaw, 0).bindTo(m_camRotationYaw);
+	registerCvar_number(Cvars::carRotationPitch, DEFAULT_CAR_PITCH).bindTo(m_carRotationPitch);
+	registerCvar_number(Cvars::carRotationYaw, DEFAULT_CAR_YAW).bindTo(m_carRotationYaw);
+	registerCvar_number(Cvars::carRotationRoll, DEFAULT_CAR_ROLL).bindTo(m_carRotationRoll);
 }
 
 void MainMenuComponent::initCommands()
@@ -164,7 +172,7 @@ void MainMenuComponent::applyCustomCamSettings()
 
 	// custom location
 	if (*m_useCustomLocation)
-		setLocation({*m_carLocationX, *m_carLocationY, *m_carLocationZ});
+		setCarLocation({*m_carLocationX, *m_carLocationY, *m_carLocationZ});
 }
 
 void MainMenuComponent::setCameraRotation(const FRotator& rot, UCameraState_CarPreview_TA* camState, bool log)
@@ -202,9 +210,9 @@ void MainMenuComponent::setCameraRotation(const FRotator& rot, UCameraState_CarP
 		LOG("Set camera rotation: Pitch:{} - Yaw:{} - Roll: {}", rot.Pitch, rot.Yaw, rot.Roll);
 }
 
-void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
+void MainMenuComponent::setCarLocation(const FVector& newLocation, bool log)
 {
-	// from voltage source ... slightly modified
+	// // from voltage source ... slightly modified
 	auto* garageGFX = Instances.GetInstanceOf<UGFxData_Garage_TA>();
 	if (!validUObject(garageGFX))
 		return;
@@ -212,10 +220,17 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 	UCarPreviewSet_TA* previewSet = garageGFX->CarPreviewSet;
 	if (!validUObject(previewSet))
 		return;
+	//
+	// ACarPreviewActor_TA* car = previewSet->GetPlayerCarPreviewActor(Instances.IULocalPlayer());
+	// if (!validUObject(car))
+	// 	return;
 
-	ACarPreviewActor_TA* previewActor = previewSet->GetPlayerCarPreviewActor(Instances.IULocalPlayer());
-	if (!validUObject(previewActor))
+	auto* car = Instances.getCarPreviewActor();
+	if (!validUObject(car))
+	{
+		LOGERROR("Unable to get car preview actor");
 		return;
+	}
 
 	auto* premGarage = Instances.GetInstanceOf<UPremiumGaragePreviewSet_TA>();
 	if (!validUObject(premGarage))
@@ -237,41 +252,67 @@ void MainMenuComponent::setLocation(const FVector& newLocation, bool log)
 	if (!validUObject(turntable))
 		return;
 
-	// only show turntable if new location is outside the bounds of arena floor:
-	// - X coordinate is above 3900 or below -3900
-	// - Y coordinate is above 5000 or below -5000
-	// - Z coordinate is above 0 or below -5 (ground level is about -1.5 units)
-	if (newLocation.X < -3900 || newLocation.X > 3900 || newLocation.Y < -5000 || newLocation.Y > 5000 || newLocation.Z < -5 ||
-	    newLocation.Z > 0)
+	bool showTuntable = *m_showCarTurntable && shouldShowTurntable(newLocation);
+	setTurntableLocation(newLocation, showTuntable, turntable);
+	if (showTuntable)
 	{
-		// set turntable location
-		turntable->SetHidden(false); // unhide turntable
-		turntable->SetLocation(newLocation);
-
-		// bind turntable to the car, or sumn like that
-		previewActor->SetTurntableActor(turntable, previewActor->Rotation);
+		// bind turntable to the car
+		car->SetTurntableActor(turntable, car->Rotation);
 		DEBUGLOG("Binded turntable to local player car");
 
 		// turntable is an extra 6 units off the ground compared to car, so raise car up 6 units to compensate & avoid clipping
 		FVector newCarLocation = {newLocation.X, newLocation.Y, newLocation.Z + 6};
-
-		previewActor->SetLocation(newCarLocation); // set car location
+		car->SetLocation(newCarLocation); // set car location
 	}
 	else
-	{
-		turntable->SetHidden(true);             // hide turntable
-		previewActor->SetLocation(newLocation); // set car location
-	}
-
-	m_mmTurntableLocation = newLocation; // update state
+		car->SetLocation(newLocation); // set car location
 
 	if (log)
 		LOG("Set main menu location to X:{} - Y:{} - Z:{}", newLocation.X, newLocation.Y, newLocation.Z);
 }
 
+void MainMenuComponent::setTurntableLocation(const FVector& newLocation, bool makeVisible, ATurnTableActor_TA* turntable)
+{
+	if (!turntable)
+	{
+		auto* premGarage = Instances.GetInstanceOf<UPremiumGaragePreviewSet_TA>();
+		if (!validUObject(premGarage))
+			return;
+		turntable = premGarage->GetTurntable();
+	}
+
+	turntable->SetHidden(!makeVisible);
+	turntable->SetLocation(newLocation);
+	m_mmTurntableLocation = newLocation; // update state
+}
+
+bool MainMenuComponent::shouldShowTurntable(const FVector& location)
+{
+	// only show turntable if new location is outside the bounds of arena floor:
+	// - X coordinate is above 3900 or below -3900
+	// - Y coordinate is above 5000 or below -5000
+	// - Z coordinate is above 0 or below -5 (ground level is about -1.5 units)
+	return location.X < -3900 || location.X > 3900 || location.Y < -5000 || location.Y > 5000 || location.Z < -5 || location.Z > 0;
+}
+
+void MainMenuComponent::setRotation(const FRotator& rot)
+{
+	auto* car = Instances.getCarPreviewActor();
+	if (!car)
+		return;
+
+	// NOTE: setting rotation like this affects the camera as well, which isn't desirable
+	// TODO: maybe eventually set car rotation without affecting the camera
+	car->Rotation = rot;
+
+	// update turntable rotation, if turntable exists
+	if (validUObject(car->TurntableActor))
+		car->TurntableActor->HandleRotationChanged(car->TurntableActor->RotateComponent, rot);
+}
+
 void MainMenuComponent::resetLocation(bool log)
 {
-	setLocation(DEFAULT_CAR_LOCATION);
+	setCarLocation(DEFAULT_CAR_LOCATION);
 
 	if (log)
 		LOG("Reset main menu location to X:{} - Y:{} - Z:{}", DEFAULT_CAR_LOCATION.X, DEFAULT_CAR_LOCATION.Y, DEFAULT_CAR_LOCATION.Z);
@@ -429,11 +470,11 @@ void MainMenuComponent::restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet
 	}
 
 	turntable->SetHidden(false); // unhide turntable if hidden
-	turntable->SetLocation(default_turntable_location);
+	turntable->SetLocation(DEFAULT_TURNTABLE_LOCATION);
 	LOG("Set turntable location..... X:{} - Y:{} - Z:{}",
-	    default_turntable_location.X,
-	    default_turntable_location.Y,
-	    default_turntable_location.Z);
+	    DEFAULT_TURNTABLE_LOCATION.X,
+	    DEFAULT_TURNTABLE_LOCATION.Y,
+	    DEFAULT_TURNTABLE_LOCATION.Z);
 
 	// ig the stuff below needs to be executed AFTER the post hook callback. Or maybe just needs a lil delay which gw->Execute provides?
 	gameWrapper->Execute(
@@ -441,11 +482,11 @@ void MainMenuComponent::restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet
 	    {
 		    preview_actor->SetHidden(false);
 
-		    preview_actor->SetLocation(default_premium_garage_car_location);
+		    preview_actor->SetLocation(DEFAULT_PREM_GARAGE_CAR_LOCATION);
 		    LOG("(from the callback) Set premium garage car preview actor location..... X:{} - Y:{} - Z:{}",
-		        default_premium_garage_car_location.X,
-		        default_premium_garage_car_location.Y,
-		        default_premium_garage_car_location.Z);
+		        DEFAULT_PREM_GARAGE_CAR_LOCATION.X,
+		        DEFAULT_PREM_GARAGE_CAR_LOCATION.Y,
+		        DEFAULT_PREM_GARAGE_CAR_LOCATION.Z);
 
 		    preview_actor->ApplyTurntableBase();
 		    LOG("AppliedTurntableBase");
@@ -499,11 +540,15 @@ void MainMenuComponent::restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* 
 void MainMenuComponent::display()
 {
 	auto useCustomMainMenuLocation_cvar      = getCvar(Cvars::useCustomMainMenuLocation);
+	auto showCarTurntable_cvar               = getCvar(Cvars::showCarTurntable);
 	auto mainMenuX_cvar                      = getCvar(Cvars::mainMenuX);
 	auto mainMenuY_cvar                      = getCvar(Cvars::mainMenuY);
 	auto mainMenuZ_cvar                      = getCvar(Cvars::mainMenuZ);
 	auto customFOV_cvar                      = getCvar(Cvars::customFov);
 	auto preserveMainMenuCameraRotation_cvar = getCvar(Cvars::preserveMainMenuCameraRotation);
+	auto carRotationPitch_cvar               = getCvar(Cvars::carRotationPitch);
+	auto carRotationYaw_cvar                 = getCvar(Cvars::carRotationYaw);
+	auto carRotationRoll_cvar                = getCvar(Cvars::carRotationRoll);
 	if (!useCustomMainMenuLocation_cvar)
 		return;
 
@@ -511,68 +556,150 @@ void MainMenuComponent::display()
 	{
 		GUI::ScopedChild c{"mainMenuLocation", ImVec2(0, mm_location_height), true};
 
-		GUI::Spacing(2);
-
-		// enable custom team names checkbox
-		bool useCustomMainMenuLoc = useCustomMainMenuLocation_cvar.getBoolValue();
-		if (ImGui::Checkbox("Custom location", &useCustomMainMenuLoc))
-			useCustomMainMenuLocation_cvar.setValue(useCustomMainMenuLoc);
-
-		if (useCustomMainMenuLoc)
+		if (ImGui::CollapsingHeader("Car Location"))
 		{
-			GUI::Spacing(2);
+			GUI::ScopedIndent indent{20.0f};
 
-			// X
-			float mainMenuX = mainMenuX_cvar.getIntValue();
-			if (ImGui::SliderFloat("X##sliderX", &mainMenuX, -50000, 50000, "%.0f"))
-				mainMenuX_cvar.setValue(mainMenuX);
-			ImGui::SameLine();
-			ImGui::PushItemWidth(100);
-			if (ImGui::InputFloat("##inputX", &mainMenuX, 10.0f, 100.0f, "%.0f"))
-				mainMenuX_cvar.setValue(mainMenuX);
-			ImGui::PopItemWidth();
+			// enable custom team names checkbox
+			bool useCustomMainMenuLoc = useCustomMainMenuLocation_cvar.getBoolValue();
+			if (ImGui::Checkbox("Custom location", &useCustomMainMenuLoc))
+				useCustomMainMenuLocation_cvar.setValue(useCustomMainMenuLoc);
 
-			// Y
-			float mainMenuY = mainMenuY_cvar.getIntValue();
-			if (ImGui::SliderFloat("Y##sliderY", &mainMenuY, -50000, 50000, "%.0f"))
-				mainMenuY_cvar.setValue(mainMenuY);
-			ImGui::SameLine();
-			ImGui::PushItemWidth(100);
-			if (ImGui::InputFloat("##inputY", &mainMenuY, 10.0f, 100.0f, "%.0f"))
-				mainMenuY_cvar.setValue(mainMenuY);
-			ImGui::PopItemWidth();
-
-			// Z
-			float mainMenuZ = mainMenuZ_cvar.getFloatValue();
-			if (ImGui::SliderFloat("Z##sliderZ", &mainMenuZ, -50000, 50000, "%.0f"))
-				mainMenuZ_cvar.setValue(mainMenuZ);
-			ImGui::SameLine();
-			ImGui::PushItemWidth(100);
-			if (ImGui::InputFloat("##inputZ", &mainMenuZ, 10.0f, 100.0f, "%.0f"))
-				mainMenuZ_cvar.setValue(mainMenuZ);
-			ImGui::PopItemWidth();
-
-			GUI::Spacing(2);
-
-			if (ImGui::Button("Apply##mainMenuLocation"))
+			if (useCustomMainMenuLoc)
 			{
-				FVector newLocation = {mainMenuX, mainMenuY, mainMenuZ};
+				static constexpr auto NUM_INPUT_WIDTH = 100.0f;
 
-				GAME_THREAD_EXECUTE({ setLocation(newLocation); }, newLocation);
+				bool showCarTurntable = showCarTurntable_cvar.getBoolValue();
+				if (ImGui::Checkbox("Show turntable", &showCarTurntable))
+				{
+					showCarTurntable_cvar.setValue(showCarTurntable);
+					gameWrapper->Execute(
+					    [this](GameWrapper* gw)
+					    {
+						    setTurntableLocation(m_mmTurntableLocation, *m_showCarTurntable && shouldShowTurntable(m_mmTurntableLocation));
+					    });
+				}
+
+				GUI::Spacing(2);
+
+				// X
+				float mainMenuX = mainMenuX_cvar.getIntValue();
+				if (ImGui::SliderFloat("X##sliderX", &mainMenuX, -100000, 100000, "%.0f"))
+					mainMenuX_cvar.setValue(mainMenuX);
+				ImGui::SameLine();
+				ImGui::PushItemWidth(NUM_INPUT_WIDTH);
+				if (ImGui::InputFloat("##inputX", &mainMenuX, 10.0f, 100.0f, "%.0f"))
+					mainMenuX_cvar.setValue(mainMenuX);
+				ImGui::PopItemWidth();
+
+				// Y
+				float mainMenuY = mainMenuY_cvar.getIntValue();
+				if (ImGui::SliderFloat("Y##sliderY", &mainMenuY, -100000, 100000, "%.0f"))
+					mainMenuY_cvar.setValue(mainMenuY);
+				ImGui::SameLine();
+				ImGui::PushItemWidth(NUM_INPUT_WIDTH);
+				if (ImGui::InputFloat("##inputY", &mainMenuY, 10.0f, 100.0f, "%.0f"))
+					mainMenuY_cvar.setValue(mainMenuY);
+				ImGui::PopItemWidth();
+
+				// Z
+				float mainMenuZ = mainMenuZ_cvar.getFloatValue();
+				if (ImGui::SliderFloat("Z##sliderZ", &mainMenuZ, -100000, 100000, "%.0f"))
+					mainMenuZ_cvar.setValue(mainMenuZ);
+				ImGui::SameLine();
+				ImGui::PushItemWidth(NUM_INPUT_WIDTH);
+				if (ImGui::InputFloat("##inputZ", &mainMenuZ, 10.0f, 100.0f, "%.0f"))
+					mainMenuZ_cvar.setValue(mainMenuZ);
+				ImGui::PopItemWidth();
+
+				GUI::Spacing(2);
+
+				if (ImGui::Button("Apply##mainMenuLocation"))
+				{
+					FVector newLocation = {mainMenuX, mainMenuY, mainMenuZ};
+
+					GAME_THREAD_EXECUTE({ setCarLocation(newLocation); }, newLocation);
+				}
+
+				GUI::SameLineSpacing_relative(25);
+
+				if (ImGui::Button("Reset##mainMenuLocation"))
+				{
+					// reset cvar values
+					mainMenuX_cvar.setValue(DEFAULT_CAR_X);
+					mainMenuY_cvar.setValue(DEFAULT_CAR_Y);
+					mainMenuZ_cvar.setValue(DEFAULT_CAR_Z);
+
+					GAME_THREAD_EXECUTE({ resetLocation(true); });
+				}
 			}
 
-			GUI::SameLineSpacing_relative(25);
+			GUI::Spacing(2);
+		}
 
-			if (ImGui::Button("Reset##mainMenuLocation"))
+		static constexpr std::string_view ROTATION_TOOLTIP = "This feature is kinda scuffed rn\n\nRotation affects your camera angle :(";
+
+		if (ImGui::CollapsingHeader("Car Rotation"))
+		{
+			GUI::ToolTip(ROTATION_TOOLTIP);
+			GUI::ScopedIndent indent{20.0f};
+
+			bool shouldApplyRotation = false;
+
+			int carRotationPitch = carRotationPitch_cvar.getIntValue();
+			if (ImGui::SliderInt("Pitch", &carRotationPitch, -16364, 16340))
 			{
-				// reset cvar values
-				mainMenuX_cvar.setValue(DEFAULT_CAR_X);
-				mainMenuY_cvar.setValue(DEFAULT_CAR_Y);
-				mainMenuZ_cvar.setValue(DEFAULT_CAR_Z);
+				carRotationPitch_cvar.setValue(carRotationPitch);
+				shouldApplyRotation = true;
+			}
+			GUI::SameLineSpacing_relative(10.0f);
+			if (ImGui::Button("Reset##pitch"))
+			{
+				carRotationPitch_cvar.setValue(DEFAULT_CAR_PITCH);
+				GAME_THREAD_EXECUTE({ setRotation({*m_carRotationPitch, *m_carRotationYaw, *m_carRotationRoll}); });
+			}
 
-				GAME_THREAD_EXECUTE({ resetLocation(true); });
+			int carRotationYaw = carRotationYaw_cvar.getIntValue();
+			if (ImGui::SliderInt("Yaw", &carRotationYaw, -32768, 32764))
+			{
+				carRotationYaw_cvar.setValue(carRotationYaw);
+				shouldApplyRotation = true;
+			}
+			GUI::SameLineSpacing_relative(10.0f);
+			if (ImGui::Button("Reset##yaw"))
+			{
+				carRotationYaw_cvar.setValue(DEFAULT_CAR_YAW);
+				GAME_THREAD_EXECUTE({ setRotation({*m_carRotationPitch, *m_carRotationYaw, *m_carRotationRoll}); });
+			}
+
+			int carRotationRoll = carRotationRoll_cvar.getIntValue();
+			if (ImGui::SliderInt("Roll", &carRotationRoll, -32768, 32764))
+			{
+				carRotationRoll_cvar.setValue(carRotationRoll);
+				shouldApplyRotation = true;
+			}
+			GUI::SameLineSpacing_relative(10.0f);
+			if (ImGui::Button("Reset##roll"))
+			{
+				carRotationRoll_cvar.setValue(DEFAULT_CAR_ROLL);
+				GAME_THREAD_EXECUTE({ setRotation({*m_carRotationPitch, *m_carRotationYaw, *m_carRotationRoll}); });
+			}
+
+			if (shouldApplyRotation)
+				GAME_THREAD_EXECUTE({ setRotation({*m_carRotationPitch, *m_carRotationYaw, *m_carRotationRoll}); });
+
+			GUI::Spacing(2);
+
+			if (ImGui::Button("Reset"))
+			{
+				carRotationPitch_cvar.setValue(DEFAULT_CAR_PITCH);
+				carRotationYaw_cvar.setValue(DEFAULT_CAR_YAW);
+				carRotationRoll_cvar.setValue(DEFAULT_CAR_ROLL);
+				GAME_THREAD_EXECUTE({ setRotation(DEFAULT_CAR_ROTATION); });
 			}
 		}
+		else
+			GUI::ToolTip(ROTATION_TOOLTIP);
 	}
 
 	{

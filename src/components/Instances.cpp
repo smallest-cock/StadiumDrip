@@ -295,6 +295,19 @@ APlayerController* InstancesComponent::getPlayerController()
 	return static_cast<APlayerController*>(lp->Actor);
 }
 
+ACarPreviewActor_TA* InstancesComponent::getCarPreviewActor()
+{
+	auto* pc = getPlayerController();
+	if (!pc)
+		return nullptr;
+	for (auto* child : pc->Children)
+	{
+		if (validUObject(child) && child->IsA<ACarPreviewActor_TA>())
+			return static_cast<ACarPreviewActor_TA*>(child);
+	}
+	return nullptr;
+}
+
 AGFxHUD_TA* InstancesComponent::getHUD()
 {
 	APlayerController* pc = getPlayerController();
