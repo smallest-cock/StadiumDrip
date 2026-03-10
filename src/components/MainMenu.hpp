@@ -1,14 +1,13 @@
 #pragma once
 #include "Component.hpp"
 
-class MainMenuComponent : Component<MainMenuComponent>
-{
+class MainMenuComponent : Component<MainMenuComponent> {
 public:
 	MainMenuComponent() {}
 	~MainMenuComponent() {}
 
 	static constexpr std::string_view componentName = "MainMenu";
-	void                              init(const std::shared_ptr<GameWrapper>& gw);
+	void                              init(const std::shared_ptr<GameWrapper> &gw);
 
 private:
 	void initCvars();
@@ -72,19 +71,19 @@ private:
 
 private:
 	void                setBackground(EMainMenuBackground backgroundID, bool log = false);
-	void                setCarLocation(const FVector& newLocation, bool log = false);
-	void                setTurntableLocation(const FVector& newLocation, bool makeVisible, ATurnTableActor_TA* turntable = nullptr);
-	void                setRotation(const FRotator& rot);
+	void                setCarLocation(const FVector &newLocation, bool log = false);
+	void                setTurntableLocation(const FVector &newLocation, bool makeVisible, ATurnTableActor_TA *turntable = nullptr);
+	void                setRotation(const FRotator &rot);
 	void                resetLocation(bool log = false);
 	void                setCameraFOV(float newFOV, bool log = false);
 	void                resetCameraFOV(bool log = false);
-	void                setCameraRotation(const FRotator& rot, UCameraState_CarPreview_TA* camState = nullptr, bool log = true);
+	void                setCameraRotation(const FRotator &rot, UCameraState_CarPreview_TA *camState = nullptr, bool log = true);
 	EMainMenuBackground getSelectedBackground();
 
-	void restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet_TA* premiumGarage = nullptr);
-	void restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA* premiumGarage = nullptr);
+	void restoreTurntableToPremiumGarage(UPremiumGaragePreviewSet_TA *premiumGarage = nullptr);
+	void restoreTurntableToMainmenu(UPremiumGaragePreviewSet_TA *premiumGarage = nullptr);
 
-	static bool shouldShowTurntable(const FVector& location);
+	static bool shouldShowTurntable(const FVector &location);
 
 public:
 	void applyCustomCamSettings();
@@ -93,9 +92,6 @@ public:
 private:
 	// gui
 	void display_bgDropdown();
-
-public:
-	// gui
 	void display();
 };
 
