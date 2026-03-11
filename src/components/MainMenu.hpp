@@ -92,6 +92,8 @@ public:
 private:
 	// gui
 	void display_bgDropdown();
+
+public:
 	void display();
 };
 

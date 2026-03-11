@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.10
+- Updated internal SDK to match latest RL version (v2.66)
+
 ## v1.2.9
 - Added new Paris map to main menu background changer
 - Increased the range of custom location sliders in main menu
