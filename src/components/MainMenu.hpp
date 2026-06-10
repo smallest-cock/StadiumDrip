@@ -61,7 +61,9 @@ private:
 	    {"DFH Stadium (10th Anniversary)", EMainMenuBackground::MMBG_Anniversary},
 	    {"Boostfield Mall", EMainMenuBackground::MMBG_Mall},
 	    {"Parc de Paris", EMainMenuBackground::MMBG_Paris},
+	    {"Futura Garden (Night)", EMainMenuBackground::MMBG_FuturaNight},
 	};
+
 	std::map<EMainMenuBackground, std::string> m_reversedWorkingMMBGIds;
 	FVector                                    m_mmTurntableLocation = DEFAULT_CAR_LOCATION;
 

@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.21)
 
-project(StadiumDrip VERSION 1.2.11)
+project(StadiumDrip VERSION 1.2.12)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -41,7 +41,7 @@ set(COMPONENTS_SRC
 
 set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/external")
 set(BMSDK_DIR "${EXTERNAL_DIR}/BMSDK")
-set(RLSDK_DIR "${EXTERNAL_DIR}/RLSDK/RLSDK_w_pch_includes")
+set(RLSDK_DIR "${EXTERNAL_DIR}/RLSDK/RLSDK")
 set(IMGUI_DIR "${EXTERNAL_DIR}/BakkesmodPluginTemplate/IMGUI")
 set(MODUTILS_DIR "${EXTERNAL_DIR}/ModUtils")
 
@@ -84,10 +84,10 @@ set(MODUTILS_SRC
 add_link_options(/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF)
 
 add_compile_options(${compile_options})
-add_compile_definitions(UNICODE _UNICODE)
+add_compile_definitions(UNICODE _UNICODE USE_PCH)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-  message(FATAL_ERROR
+    message(FATAL_ERROR
     "This project requires a 64-bit build.\n"
     "Make sure your toolchain is configured to use a 64-bit compiler."
   )
@@ -128,12 +128,23 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 if(NOT "$ENV{CI}" STREQUAL "true")
-    set(INSTALLED_BMSDK_DIR "$ENV{APPDATA}/bakkesmod/bakkesmod/bakkesmodsdk" CACHE PATH "Installed BakkesMod SDK directory")
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+        set(INSTALLED_BMSDK_DIR "$ENV{APPDATA}/bakkesmod/bakkesmod/bakkesmodsdk" CACHE PATH "Installed BakkesMod SDK directory")
 
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND "${INSTALLED_BMSDK_DIR}/bakkesmod-patch.exe" "$<TARGET_FILE:${PROJECT_NAME}>" 
-        COMMENT "Running bakkesmod-patch.exe after building ${PROJECT_NAME}"
-    )
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND "${INSTALLED_BMSDK_DIR}/bakkesmod-patch.exe" "$<TARGET_FILE:${PROJECT_NAME}>"
+            COMMENT "Running bakkesmod-patch.exe after building ${PROJECT_NAME}"
+        )
+    else()
+        # INSTALLED_BMSDK_DIR should be defined in a CMakeUserPresets.json
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND cp ${CMAKE_SOURCE_DIR}/plugins/$<TARGET_FILE_NAME:${PROJECT_NAME}> ${INSTALLED_BMSDK_DIR}/plugins
+            COMMENT "Copying plugin DLL to BakkesMod plugins directory"
+        )
+    endif()
 endif()

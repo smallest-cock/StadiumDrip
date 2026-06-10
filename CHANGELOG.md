@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.12
+- Updated internal SDK to match latest RL version (v2.70)
+
 ## v1.2.11
 - Updated internal SDK to match latest RL version (v2.69)
 
