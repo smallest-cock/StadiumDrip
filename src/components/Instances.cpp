@@ -1,23 +1,19 @@
 #include "pch.h"
 #include "Instances.hpp"
 
-void InstancesComponent::onCreate()
-{
+void InstancesComponent::onCreate() {
 	I_UCanvas             = nullptr;
 	I_AHUD                = nullptr;
 	I_UGameViewportClient = nullptr;
 	I_APlayerController   = nullptr;
 }
 
-void InstancesComponent::onDestroy()
-{
+void InstancesComponent::onDestroy() {
 	m_staticClasses.clear();
 	m_staticFunctions.clear();
 
-	for (UObject* uObject : m_createdObjects)
-	{
-		if (uObject)
-		{
+	for (UObject *uObject : m_createdObjects) {
+		if (uObject) {
 			MarkForDestroy(uObject);
 		}
 	}
@@ -28,114 +24,76 @@ void InstancesComponent::onDestroy()
 // ========================================= to initialize globals ===========================================
 
 constexpr auto MODULE_NAME = L"RocketLeague.exe";
+HMODULE        rlModule    = GetModuleHandle(MODULE_NAME);
 
-uintptr_t findRipRelativeAddr(uintptr_t startAddr, int offsetToDisplacementInt32)
-{
-	if (!startAddr)
+uintptr_t InstancesComponent::findGNamesAddress() {
+	constexpr auto NEW_GNAMES_SIG = "49 63 4E 08 48 8B 05 ?? ?? ?? ?? 4C 89 34 C8 EB 08";
+	uintptr_t      foundAddr      = Memory::findPattern(rlModule, NEW_GNAMES_SIG);
+	if (!foundAddr) {
+		LOGERROR("GNames wasn't found! Returning 0...");
 		return 0;
-	uintptr_t ripRelativeOffsetAddr = startAddr + offsetToDisplacementInt32;
-	int32_t   displacement          = *reinterpret_cast<int32_t*>(ripRelativeOffsetAddr);
-	return (ripRelativeOffsetAddr + 4) + displacement;
-};
-
-uintptr_t InstancesComponent::findPattern(HMODULE module, const unsigned char* pattern, const char* mask)
-{
-	MODULEINFO info = {};
-	GetModuleInformation(GetCurrentProcess(), module, &info, sizeof(MODULEINFO));
-
-	uintptr_t start  = reinterpret_cast<uintptr_t>(module);
-	size_t    length = info.SizeOfImage;
-
-	size_t pos        = 0;
-	size_t maskLength = std::strlen(mask) - 1;
-
-	for (uintptr_t retAddress = start; retAddress < start + length; retAddress++)
-	{
-		if (*reinterpret_cast<unsigned char*>(retAddress) == pattern[pos] || mask[pos] == '?')
-		{
-			if (pos == maskLength)
-				return (retAddress - maskLength);
-			pos++;
-		}
-		else
-		{
-			retAddress -= pos;
-			pos = 0;
-		}
 	}
-	return NULL;
+	return Memory::getRipRelativeAddr(foundAddr, 7);
 }
 
-uintptr_t InstancesComponent::findGNamesAddress()
-{
-	unsigned char GNamesPattern[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x35\x25\x02\x00";
-	char          GNamesMask[]    = "??????xx??xxxxxx";
-
-	return findPattern(GetModuleHandle(MODULE_NAME), GNamesPattern, GNamesMask);
-}
-
-uintptr_t InstancesComponent::findGMallocAddress()
-{
-	constexpr uint8_t pattern[] = "\x48\x89\x0D\x00\x00\x00\x00\x48\x8B\x01\xFF\x50\x60";
-	constexpr auto    mask      = "xxx????xxxxxx";
-
-	uintptr_t foundAddr = findPattern(GetModuleHandle(MODULE_NAME), pattern, mask);
-	if (!foundAddr)
-	{
+uintptr_t InstancesComponent::findGMallocAddress() {
+	constexpr auto GMALLOC_SIG = "48 89 0D ?? ?? ?? ?? 48 8B 01 FF 50 60";
+	uintptr_t      foundAddr   = Memory::findPattern(rlModule, GMALLOC_SIG);
+	if (!foundAddr) {
 		LOGERROR("GMalloc wasn't found! Returning 0...");
 		return 0;
 	}
-	return findRipRelativeAddr(foundAddr, 3);
+	return Memory::getRipRelativeAddr(foundAddr, 3);
 }
 
-bool InstancesComponent::initGlobals()
-{
-	uintptr_t gnamesAddr = findGNamesAddress();
-	if (!gnamesAddr)
+bool InstancesComponent::initGlobals() {
 	{
-		LOGERROR("Failed to find GNames address via pattern scan");
-		return false;
-	}
-	GNames   = reinterpret_cast<GNames_t>(gnamesAddr);
-	GObjects = reinterpret_cast<GObjects_t>(gnamesAddr + 0x48);
+		std::jthread gnamesThread([this]() {
+			uintptr_t gnamesAddr = findGNamesAddress();
+			if (!gnamesAddr) {
+				LOGERROR("Failed to find GNames address via pattern scan");
+				return;
+			}
+			GNames   = reinterpret_cast<GNames_t>(gnamesAddr);
+			GObjects = reinterpret_cast<GObjects_t>(gnamesAddr + 0x48);
+		});
 
-	uintptr_t gmallocAddr = findGMallocAddress();
-	if (!gmallocAddr)
-	{
-		LOGERROR("Failed to find GMalloc address via pattern scan");
-		return false;
+		std::jthread gmallocThread([this]() {
+			uintptr_t gmallocAddr = findGMallocAddress();
+			if (!gmallocAddr) {
+				LOGERROR("Failed to find GMalloc address via pattern scan");
+				return;
+			}
+			GMalloc = gmallocAddr;
+		});
 	}
-	GMalloc = gmallocAddr;
+
+	if (!GNames || !GObjects)
+		return false;
 
 	return checkGlobals();
 }
 
-bool InstancesComponent::areGObjectsValid()
-{
-	if (UObject::GObjObjects()->size() > 0 && UObject::GObjObjects()->capacity() > UObject::GObjObjects()->size())
-	{
+bool InstancesComponent::areGObjectsValid() {
+	if (UObject::GObjObjects()->size() > 0 && UObject::GObjObjects()->capacity() > UObject::GObjObjects()->size()) {
 		if (UObject::GObjObjects()->at(0)->GetFullName() == "Class Core.Config_ORS")
 			return true;
 	}
 	return false;
 }
 
-bool InstancesComponent::areGNamesValid()
-{
-	if (FName::Names()->size() > 0 && FName::Names()->capacity() > FName::Names()->size())
-	{
+bool InstancesComponent::areGNamesValid() {
+	if (FName::Names()->size() > 0 && FName::Names()->capacity() > FName::Names()->size()) {
 		if (FName(0).ToString() == "None")
 			return true;
 	}
 	return false;
 }
 
-bool InstancesComponent::checkGlobals()
-{
+bool InstancesComponent::checkGlobals() {
 	bool gnamesValid   = GNames && areGNamesValid();
 	bool gobjectsValid = GObjects && areGObjectsValid();
-	if (!gnamesValid || !gobjectsValid)
-	{
+	if (!gnamesValid || !gobjectsValid) {
 		LOGERROR("(onLoad) RLSDK classes are wrong... plugin needs an update :(");
 		LOG("GNames valid: {} -- GObjects valid: {}", gnamesValid, gobjectsValid);
 		return false;
@@ -147,62 +105,48 @@ bool InstancesComponent::checkGlobals()
 
 // ===========================================================================================================
 
-class UClass* InstancesComponent::FindStaticClass(const std::string& className)
-{
-	if (m_staticClasses.empty())
-	{
-		for (int32_t i = 0; i < (UObject::GObjObjects()->size() - INSTANCES_INTERATE_OFFSET); i++)
-		{
-			UObject* uObject = UObject::GObjObjects()->at(i);
+class UClass *InstancesComponent::FindStaticClass(const std::string &className) {
+	if (m_staticClasses.empty()) {
+		for (int32_t i = 0; i < (UObject::GObjObjects()->size() - INSTANCES_INTERATE_OFFSET); i++) {
+			UObject *uObject = UObject::GObjObjects()->at(i);
 
-			if (uObject)
-			{
-				if ((uObject->GetFullName().find("Class") == 0))
-				{
-					m_staticClasses[uObject->GetFullName()] = static_cast<UClass*>(uObject);
+			if (uObject) {
+				if ((uObject->GetFullName().find("Class") == 0)) {
+					m_staticClasses[uObject->GetFullName()] = static_cast<UClass *>(uObject);
 				}
 			}
 		}
 	}
 
-	if (m_staticClasses.contains(className))
-	{
+	if (m_staticClasses.contains(className)) {
 		return m_staticClasses[className];
 	}
 
 	return nullptr;
 }
 
-class UFunction* InstancesComponent::FindStaticFunction(const std::string& className)
-{
-	if (m_staticFunctions.empty())
-	{
-		for (int32_t i = 0; i < (UObject::GObjObjects()->size() - INSTANCES_INTERATE_OFFSET); i++)
-		{
-			UObject* uObject = UObject::GObjObjects()->at(i);
+class UFunction *InstancesComponent::FindStaticFunction(const std::string &className) {
+	if (m_staticFunctions.empty()) {
+		for (int32_t i = 0; i < (UObject::GObjObjects()->size() - INSTANCES_INTERATE_OFFSET); i++) {
+			UObject *uObject = UObject::GObjObjects()->at(i);
 
-			if (uObject)
-			{
-				if (uObject && uObject->IsA<UFunction>())
-				{
-					m_staticFunctions[uObject->GetFullName()] = static_cast<UFunction*>(uObject);
+			if (uObject) {
+				if (uObject && uObject->IsA<UFunction>()) {
+					m_staticFunctions[uObject->GetFullName()] = static_cast<UFunction *>(uObject);
 				}
 			}
 		}
 	}
 
-	if (m_staticFunctions.contains(className))
-	{
+	if (m_staticFunctions.contains(className)) {
 		return m_staticFunctions[className];
 	}
 
 	return nullptr;
 }
 
-void InstancesComponent::MarkInvincible(class UObject* object)
-{
-	if (object)
-	{
+void InstancesComponent::MarkInvincible(class UObject *object) {
+	if (object) {
 		object->ObjectFlags &= ~EObjectFlags::RF_Transient;
 		object->ObjectFlags &= ~EObjectFlags::RF_TagGarbage;
 		object->ObjectFlags &= ~EObjectFlags::RF_PendingKill;
@@ -211,48 +155,42 @@ void InstancesComponent::MarkInvincible(class UObject* object)
 	}
 }
 
-void InstancesComponent::MarkForDestroy(class UObject* object)
-{
-	if (object)
-	{
+void InstancesComponent::MarkForDestroy(class UObject *object) {
+	if (object) {
 		object->ObjectFlags |= EObjectFlags::RF_Transient;
 		object->ObjectFlags |= EObjectFlags::RF_TagGarbage;
 		object->ObjectFlags |= EObjectFlags::RF_PendingKill;
 
 		auto objectIt = std::find(m_createdObjects.begin(), m_createdObjects.end(), object);
 
-		if (objectIt != m_createdObjects.end())
-		{
+		if (objectIt != m_createdObjects.end()) {
 			m_createdObjects.erase(objectIt);
 		}
 	}
 }
 
-class UEngine*             InstancesComponent::IUEngine() { return UEngine::GetEngine(); }
-class UAudioDevice*        InstancesComponent::IUAudioDevice() { return UEngine::GetAudioDevice(); }
-class AWorldInfo*          InstancesComponent::IAWorldInfo() { return UEngine::GetCurrentWorldInfo(); }
-class UCanvas*             InstancesComponent::IUCanvas() { return I_UCanvas; }
-class AHUD*                InstancesComponent::IAHUD() { return I_AHUD; }
-class UFileSystem*         InstancesComponent::IUFileSystem() { return reinterpret_cast<UFileSystem*>(UFileSystem::StaticClass()); }
-class UGameViewportClient* InstancesComponent::IUGameViewportClient() { return I_UGameViewportClient; }
+class UEngine             *InstancesComponent::IUEngine() { return UEngine::GetEngine(); }
+class UAudioDevice        *InstancesComponent::IUAudioDevice() { return UEngine::GetAudioDevice(); }
+class AWorldInfo          *InstancesComponent::IAWorldInfo() { return UEngine::GetCurrentWorldInfo(); }
+class UCanvas             *InstancesComponent::IUCanvas() { return I_UCanvas; }
+class AHUD                *InstancesComponent::IAHUD() { return I_AHUD; }
+class UFileSystem         *InstancesComponent::IUFileSystem() { return reinterpret_cast<UFileSystem *>(UFileSystem::StaticClass()); }
+class UGameViewportClient *InstancesComponent::IUGameViewportClient() { return I_UGameViewportClient; }
 
-class ULocalPlayer* InstancesComponent::IULocalPlayer()
-{
-	UEngine* engine = IUEngine();
+class ULocalPlayer *InstancesComponent::IULocalPlayer() {
+	UEngine *engine = IUEngine();
 
-	if (engine && engine->GamePlayers[0])
-	{
+	if (engine && engine->GamePlayers[0]) {
 		return engine->GamePlayers[0];
 	}
 
 	return nullptr;
 }
 
-class APlayerController* InstancesComponent::IAPlayerController() { return I_APlayerController; }
+class APlayerController *InstancesComponent::IAPlayerController() { return I_APlayerController; }
 
-struct FUniqueNetId InstancesComponent::GetUniqueID()
-{
-	ULocalPlayer* localPlayer = IULocalPlayer();
+struct FUniqueNetId InstancesComponent::GetUniqueID() {
+	ULocalPlayer *localPlayer = IULocalPlayer();
 	if (!validUObject(localPlayer))
 		return FUniqueNetId{};
 
@@ -261,68 +199,61 @@ struct FUniqueNetId InstancesComponent::GetUniqueID()
 
 // ======================= get instance funcs =========================
 
-AGameEvent_Team_TA* InstancesComponent::getTeamGameEvent()
-{
-	ULocalPlayer* localPlayer = IULocalPlayer();
+AGameEvent_Team_TA *InstancesComponent::getTeamGameEvent() {
+	ULocalPlayer *localPlayer = IULocalPlayer();
 	if (!validUObject(localPlayer))
 		return nullptr;
 
 	if (!validUObject(localPlayer->ViewportClient) || !localPlayer->ViewportClient->IsA<UGameViewportClient_TA>())
 		return nullptr;
 
-	auto vp = static_cast<UGameViewportClient_TA*>(localPlayer->ViewportClient);
+	auto vp = static_cast<UGameViewportClient_TA *>(localPlayer->ViewportClient);
 	if (!validUObject(vp->GameEvent) || !vp->GameEvent->IsA<AGameEvent_Team_TA>())
 		return nullptr;
 
-	return static_cast<AGameEvent_Team_TA*>(vp->GameEvent);
+	return static_cast<AGameEvent_Team_TA *>(vp->GameEvent);
 }
 
-USeqAct_SetStadiumTeamColors_TA* InstancesComponent::getSetStadiumTeamColorsSeqAct()
-{
-	static USeqAct_SetStadiumTeamColors_TA* instance = nullptr;
+USeqAct_SetStadiumTeamColors_TA *InstancesComponent::getSetStadiumTeamColorsSeqAct() {
+	static USeqAct_SetStadiumTeamColors_TA *instance = nullptr;
 	if (!validUObject(instance))
-		instance = reinterpret_cast<USeqAct_SetStadiumTeamColors_TA*>(USeqAct_SetStadiumTeamColors_TA::StaticClass());
+		instance = reinterpret_cast<USeqAct_SetStadiumTeamColors_TA *>(USeqAct_SetStadiumTeamColors_TA::StaticClass());
 
 	return instance;
 }
 
-APlayerController* InstancesComponent::getPlayerController()
-{
-	ULocalPlayer* lp = Instances.IULocalPlayer();
+APlayerController *InstancesComponent::getPlayerController() {
+	ULocalPlayer *lp = Instances.IULocalPlayer();
 	if (!validUObject(lp) || !validUObject(lp->Actor) || !lp->Actor->IsA<APlayerController>())
 		return nullptr;
 
-	return static_cast<APlayerController*>(lp->Actor);
+	return static_cast<APlayerController *>(lp->Actor);
 }
 
-ACarPreviewActor_TA* InstancesComponent::getCarPreviewActor()
-{
-	auto* pc = getPlayerController();
+ACarPreviewActor_TA *InstancesComponent::getCarPreviewActor() {
+	auto *pc = getPlayerController();
 	if (!pc)
 		return nullptr;
-	for (auto* child : pc->Children)
-	{
+	for (auto *child : pc->Children) {
 		if (validUObject(child) && child->IsA<ACarPreviewActor_TA>())
-			return static_cast<ACarPreviewActor_TA*>(child);
+			return static_cast<ACarPreviewActor_TA *>(child);
 	}
 	return nullptr;
 }
 
-AGFxHUD_TA* InstancesComponent::getHUD()
-{
-	APlayerController* pc = getPlayerController();
+AGFxHUD_TA *InstancesComponent::getHUD() {
+	APlayerController *pc = getPlayerController();
 	if (!pc)
 		return nullptr;
 
 	if (!validUObject(pc->myHUD) || !pc->myHUD->IsA<AGFxHUD_TA>())
 		return nullptr;
 
-	return static_cast<AGFxHUD_TA*>(pc->myHUD);
+	return static_cast<AGFxHUD_TA *>(pc->myHUD);
 }
 
-AGameEvent_TA* InstancesComponent::getGameEvent()
-{
-	AGFxHUD_TA* hud = getHUD();
+AGameEvent_TA *InstancesComponent::getGameEvent() {
+	AGFxHUD_TA *hud = getHUD();
 	if (!hud)
 		return nullptr;
 
@@ -332,9 +263,8 @@ AGameEvent_TA* InstancesComponent::getGameEvent()
 	return hud->GameEvent;
 }
 
-UMatchType_TA* InstancesComponent::getMatchType()
-{
-	AGameEvent_TA* event = getGameEvent();
+UMatchType_TA *InstancesComponent::getMatchType() {
+	AGameEvent_TA *event = getGameEvent();
 	if (!event)
 		return nullptr;
 
@@ -344,24 +274,21 @@ UMatchType_TA* InstancesComponent::getMatchType()
 	return event->MatchType;
 }
 
-UGFxDataStore_X* InstancesComponent::GetDataStore()
-{
+UGFxDataStore_X *InstancesComponent::GetDataStore() {
 	if (!validUObject(dataStore))
 		dataStore = GetInstanceOf<UGFxDataStore_X>();
 
 	return dataStore;
 }
 
-UOnlinePlayer_X* InstancesComponent::GetOnlinePlayer()
-{
+UOnlinePlayer_X *InstancesComponent::GetOnlinePlayer() {
 	if (!validUObject(onlinePlayer))
 		onlinePlayer = GetInstanceOf<UOnlinePlayer_X>();
 
 	return onlinePlayer;
 }
 
-UCarColorSet_TA* InstancesComponent::GetColorPalette()
-{
+UCarColorSet_TA *InstancesComponent::GetColorPalette() {
 	if (!validUObject(colorPalette))
 		colorPalette = GetInstanceOf<UCarColorSet_TA>();
 
@@ -369,14 +296,13 @@ UCarColorSet_TA* InstancesComponent::GetColorPalette()
 }
 
 // misc
-std::string InstancesComponent::fullNameWithoutClass(UObject* obj)
-{
+std::string InstancesComponent::fullNameWithoutClass(UObject *obj) {
 	if (!obj)
 		return std::string();
 
 	std::string fullName = obj->GetName();
 
-	for (UObject* uOuter = obj->Outer; uOuter; uOuter = uOuter->Outer)
+	for (UObject *uOuter = obj->Outer; uOuter; uOuter = uOuter->Outer)
 		fullName = (uOuter->GetName() + "." + fullName);
 
 	return fullName;
