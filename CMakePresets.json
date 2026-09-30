@@ -32,12 +32,25 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
+        },
+        {
+          "name": "clang-cl-linux",
+          "generator": "Ninja",
+          "binaryDir": "${sourceDir}/build/ninja/clang-cl-release",
+          "toolchainFile": "${sourceDir}/cmake/toolchains/clang-cl-cross.cmake",
+          "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+          }
         }
     ],
     "buildPresets": [
         {
             "name": "Ninja-Release",
             "configurePreset": "ninja-release"
+        },
+        {
+            "name": "Ninja-Release-Clang",
+            "configurePreset": "clang-cl-linux"
         }
     ]
 }
