@@ -6,8 +6,7 @@
 BAKKESMOD_PLUGIN(StadiumDrip, "Stadium Drip", plugin_version, PLUGINTYPE_FREEPLAY)
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
-void StadiumDrip::onLoad()
-{
+void StadiumDrip::onLoad() {
 	_globalCvarManager = cvarManager;
 
 	if (!Instances.initGlobals())

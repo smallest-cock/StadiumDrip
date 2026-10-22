@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(StadiumDrip VERSION 1.2.14)
+project(StadiumDrip VERSION 1.2.16)
 
 set(CMAKE_CXX_STANDARD 20)
 
